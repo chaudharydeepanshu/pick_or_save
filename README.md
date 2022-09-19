@@ -1,3 +1,5 @@
+[![pub package](https://img.shields.io/pub/v/pick_or_save.svg)](https://pub.dev/packages/pick_or_save) 
+
 ## Package description
 
 A Flutter file picking and saving package that enables you to pick or save a single file and multiple files.
