@@ -248,7 +248,7 @@ class PickOrSave(
                                 destinationFileName = destinationFileName
                             )
                         } else {
-                            finishSuccessfully(sourceFileUri!!.toString())
+                            finishSuccessfully(listOf(sourceFileUri!!.toString()))
                         }
                     } else {
                         finishWithError(
@@ -276,7 +276,7 @@ class PickOrSave(
                                 destinationFilesNames = destinationFilesNames.filterNotNull()
                             )
                         } else {
-                            finishSuccessfully(sourceFileUris.toString())
+                            finishSuccessfully(sourceFileUris.map { uri -> uri.toString() })
                         }
                     } else {
                         val invalidFilesTypes: MutableList<String?> = mutableListOf()
@@ -354,7 +354,7 @@ class PickOrSave(
             try {
                 Log.d(LOG_TAG, "Launch...")
                 Log.d(LOG_TAG, "Copy on background...")
-                val filesPaths: MutableList<String?> = mutableListOf()
+                val filesPaths: MutableList<String> = mutableListOf()
                 0.until(destinationFilesNames.size).map { index ->
                     val destinationFileName = destinationFilesNames.elementAt(index)
                     val sourceFileUri = sourceFileUris.elementAt(index)
@@ -363,7 +363,7 @@ class PickOrSave(
                     })
                 }
                 Log.d(LOG_TAG, "...copied on background, result: $filesPaths")
-                finishSuccessfully(filesPaths.toString())
+                finishSuccessfully(filesPaths)
                 Log.d(LOG_TAG, "...launch")
             } catch (e: Exception) {
                 Log.e(LOG_TAG, "copyFileToCacheDirOnBackground failed", e)
@@ -386,7 +386,7 @@ class PickOrSave(
                     copyFileToCacheDir(context, sourceFileUri, destinationFileName)
                 }
                 Log.d(LOG_TAG, "...copied on background, result: $filePath")
-                finishSuccessfully(filePath)
+                finishSuccessfully(listOf(filePath))
                 Log.d(LOG_TAG, "...launch")
             } catch (e: Exception) {
                 Log.e(LOG_TAG, "copyFileToCacheDirOnBackground failed", e)
@@ -476,7 +476,7 @@ class PickOrSave(
                     activity,
                     destinationDirectoryUri
                 )
-                val filesPaths: MutableList<String?> = mutableListOf()
+                val filesPaths: MutableList<String> = mutableListOf()
                 0.until(sourceFiles.size).map { index ->
                     val sourceFile = sourceFiles.elementAt(index)
                     val sourceFileMimeType =
@@ -498,7 +498,7 @@ class PickOrSave(
                     })
                 }
                 Log.d(LOG_TAG, "...saved file on background, result: $filesPaths")
-                finishSuccessfully(filesPaths.toString())
+                finishSuccessfully(filesPaths)
             } catch (e: SecurityException) {
                 Log.e(LOG_TAG, "saveFileOnBackground", e)
                 finishWithError("security_exception", e.localizedMessage, e.toString())
@@ -529,7 +529,7 @@ class PickOrSave(
                     saveFile(sourceFile, destinationFileUri)
                 }
                 Log.d(LOG_TAG, "...saved file on background, result: $filePath")
-                finishSuccessfully(filePath)
+                finishSuccessfully(listOf(filePath))
             } catch (e: SecurityException) {
                 Log.e(LOG_TAG, "saveFileOnBackground", e)
                 finishWithError("security_exception", e.localizedMessage, e.toString())
@@ -579,8 +579,8 @@ class PickOrSave(
         result.error("already_active", "File dialog is already active", null)
     }
 
-    private fun finishSuccessfully(filePath: String?) {
-        pendingResult?.success(filePath)
+    private fun finishSuccessfully(filesPaths: List<String>?) {
+        pendingResult?.success(filesPaths)
         clearPendingResult()
     }
 

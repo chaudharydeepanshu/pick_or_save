@@ -10,17 +10,17 @@ class MethodChannelPickOrSave extends PickOrSavePlatform {
   final methodChannel = const MethodChannel('pick_or_save');
 
   @override
-  Future<String?> filePicker({FilePickerParams? params}) async {
-    final picked =
-        await methodChannel.invokeMethod('pickFiles', params?.toJson());
-    return picked;
+  Future<List<String>?> filePicker({FilePickerParams? params}) async {
+    final List? picked =
+        await methodChannel.invokeMethod<List?>('pickFiles', params?.toJson());
+    return picked?.cast<String>();
   }
 
   @override
-  Future<String?> fileSaver({FileSaverParams? params}) async {
-    final saved =
-        await methodChannel.invokeMethod('saveFiles', params?.toJson());
-    return saved;
+  Future<List<String>?> fileSaver({FileSaverParams? params}) async {
+    final List? saved =
+        await methodChannel.invokeMethod<List?>('saveFiles', params?.toJson());
+    return saved?.cast<String>();
   }
 }
 

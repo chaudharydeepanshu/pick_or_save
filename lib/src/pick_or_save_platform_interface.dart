@@ -23,11 +23,11 @@ abstract class PickOrSavePlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<String?> filePicker({FilePickerParams? params}) {
+  Future<List<String>?> filePicker({FilePickerParams? params}) {
     throw UnimplementedError('pickFile() has not been implemented.');
   }
 
-  Future<String?> fileSaver({FileSaverParams? params}) {
+  Future<List<String>?> fileSaver({FileSaverParams? params}) {
     throw UnimplementedError('fileSaver() has not been implemented.');
   }
 }

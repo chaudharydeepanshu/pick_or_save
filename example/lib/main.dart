@@ -26,8 +26,8 @@ class _MyAppState extends State<MyApp> {
   bool _isBusy = false;
   final bool _localOnly = false;
   final bool _copyFileToCacheDir = true;
-  String? _pickedFilePath;
-  String? _savedFilePath;
+  List<String>? _pickedFilePath;
+  List<String>? _savedFilePath;
 
   @override
   void initState() {
@@ -35,7 +35,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _fileSaver(FileSaverParams params) async {
-    String? result;
+    List<String>? result;
     try {
       setState(() {
         _isBusy = true;
@@ -53,7 +53,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _filePicker(FilePickerParams params) async {
-    String? result;
+    List<String>? result;
     try {
       setState(() {
         _isBusy = true;
@@ -109,8 +109,6 @@ class _MyAppState extends State<MyApp> {
                       : () async {
                           File tempFile = await getTempFileFromData(
                               base64.decode(testBase64));
-
-                          print(tempFile.path);
 
                           final params = FileSaverParams(
                             localOnly: _localOnly,

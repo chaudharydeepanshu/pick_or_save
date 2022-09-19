@@ -7,7 +7,7 @@ class PickOrSave {
   ///
   /// Returns the path or uri of the picked file or null if operation was cancelled.
   /// Throws exception on error.
-  Future<String?> filePicker({FilePickerParams? params}) {
+  Future<List<String>?> filePicker({FilePickerParams? params}) {
     return PickOrSavePlatform.instance.filePicker(params: params);
   }
 
@@ -16,7 +16,7 @@ class PickOrSave {
   ///
   /// Returns path of the saved file or folder if multiple files or null if operation was cancelled.
   /// Throws exception on error.
-  Future<String?> fileSaver({FileSaverParams? params}) {
+  Future<List<String>?> fileSaver({FileSaverParams? params}) {
     return PickOrSavePlatform.instance.fileSaver(params: params);
   }
 }
