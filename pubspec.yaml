@@ -1,5 +1,5 @@
 name: pick_or_save
-description: A new Flutter project.
+description: A Flutter file picking and saving package that enables you to pick or save a single file and multiple files.
 version: 0.0.1
 homepage: https://github.com/chaudharydeepanshu/pick_or_save
 repository: https://github.com/chaudharydeepanshu/pick_or_save
