@@ -127,7 +127,7 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                     call,
                     "fileExtensionsFilter"
                 ),
-                mimeTypesFilter = parseMethodCallArrayOfStringArgument(call, "mimeTypesFilter"),
+                mimeTypeFilter = parseMethodCallArrayOfStringArgument(call, "mimeTypeFilter"),
                 localOnly = call.argument("localOnly") as Boolean? == true,
                 copyFileToCacheDir = call.argument("copyFileToCacheDir") as Boolean? != false,
                 filePickingType = parseMethodCallFilePickingTypeArgument(call)

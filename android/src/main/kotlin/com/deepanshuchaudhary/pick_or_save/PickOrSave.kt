@@ -62,14 +62,14 @@ class PickOrSave(
     fun pickFile(
         result: MethodChannel.Result,
         fileExtensionsFilter: Array<String>?,
-        mimeTypesFilter: Array<String>?,
+        mimeTypeFilter: Array<String>?,
         localOnly: Boolean,
         copyFileToCacheDir: Boolean,
         filePickingType: FilePickingType
     ) {
         Log.d(
             LOG_TAG,
-            "pickFile - IN, fileExtensionsFilter=$fileExtensionsFilter, mimeTypesFilter=$mimeTypesFilter, localOnly=$localOnly, copyFileToCacheDir=$copyFileToCacheDir, filePickingType=$filePickingType"
+            "pickFile - IN, fileExtensionsFilter=$fileExtensionsFilter, mimeTypesFilter=$mimeTypeFilter, localOnly=$localOnly, copyFileToCacheDir=$copyFileToCacheDir, filePickingType=$filePickingType"
         )
 
         if (!setPendingResult(result)) {
@@ -91,7 +91,7 @@ class PickOrSave(
         }
 
         intent.type = "*/*"
-        applyMimeTypesFilterToIntent(mimeTypesFilter, intent)
+        applyMimeTypesFilterToIntent(mimeTypeFilter, intent)
 
         activity.startActivityForResult(intent, REQUEST_CODE_PICK_FILE)
 
