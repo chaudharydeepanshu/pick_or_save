@@ -4,10 +4,13 @@
 
 A Flutter file picking and saving package that enables you to pick or save a single file and multiple files.
 
+Note: Although this package supports picking and caching files by default to work with them in flutter, it is actually built for those who manage files natively in android as this package supports disabling copying of file in cache to work with Android URIs directly.
+
 ## Features
 
 - Works on Android 5.0 (API level 21) or later.
 - Pick single file or multiple files.
+- Get meta data like name, size and last modified for files using uri.
 - Saves single file while allowing user to choose location and name.
 - Saves multiple file while allowing user to choose location or directory for saving all files.
 - Saves file from either file path or file data.
@@ -38,6 +41,17 @@ List<String>? result = await PickOrSave().filePicker(
 );
 String filePath = result[0];
 ```
+Note: Setting ```copyFileToCacheDir = false``` will provide uri path which can only be used in android native platform.
+
+### Picking multiple files
+
+```dart
+List<String>? filesPaths = await PickOrSave().filePicker(
+  params: FilePickerParams(filePickingType: FilePickingType.multiple),
+);
+```
+Note: Setting ```copyFileToCacheDir = false``` will provide uri paths which can only be used in android native platform.
+
 ### Picking multiple files
 
 ```dart
@@ -72,3 +86,12 @@ List<String>? savedFilesPaths = await PickOrSave().fileSaver(
 | Saving single file  | Saving multiple files |
 | ------------- | ------------- |
 | ![WhatsApp Image 2022-09-19 at 1 34 02 PM](https://user-images.githubusercontent.com/85361211/190974633-6aab39c9-e817-4b92-84ed-b3fd0a4405b9.jpeg) | ![WhatsApp Image 2022-09-19 at 1 33 04 PM](https://user-images.githubusercontent.com/85361211/190974687-fa5f0ba1-391f-4103-8ffc-acdf9c8bca73.jpeg) |
+
+### File Metadata
+
+```dart
+FileMetadata result = await PickOrSave().fileMetaData(
+  params: FileMetadataParams(sourceFilePath: fileUri),
+);
+```
+Note: This is a test functionality and only supports uri paths which are obtained from file picking when ```copyFileToCacheDir = false```.
