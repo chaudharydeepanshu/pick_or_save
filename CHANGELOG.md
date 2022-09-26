@@ -1,3 +1,7 @@
+## 0.0.5
+
+* Fixes file metadata last modified format.
+
 ## 0.0.4
 
 * Adds function to get metadata of a uri.

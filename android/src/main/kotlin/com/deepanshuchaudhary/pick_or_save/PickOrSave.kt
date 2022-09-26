@@ -291,7 +291,7 @@ class PickOrSave(
 
                 lastModified = if (documentFile != null) {
                     if (documentFile.lastModified() != 0.toLong()) {
-                        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss:SSSZ", Locale.ENGLISH).format(
+                        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ENGLISH).format(
                             Date(documentFile.lastModified())
                         )
                     } else {
