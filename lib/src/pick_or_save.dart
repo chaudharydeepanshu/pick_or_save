@@ -19,4 +19,12 @@ class PickOrSave {
   Future<List<String>?> fileSaver({FileSaverParams? params}) {
     return PickOrSavePlatform.instance.fileSaver(params: params);
   }
+
+  /// Get the display name and size of a file from uri.
+  ///
+  /// Returns [FileMetadata].
+  /// Throws exception on error.
+  Future<FileMetadata> fileMetaData({FileMetadataParams? params}) {
+    return PickOrSavePlatform.instance.fileMetaData(params: params);
+  }
 }

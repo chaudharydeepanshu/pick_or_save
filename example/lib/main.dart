@@ -25,7 +25,7 @@ class _MyAppState extends State<MyApp> {
 
   bool _isBusy = false;
   final bool _localOnly = false;
-  final bool _copyFileToCacheDir = true;
+  final bool _copyFileToCacheDir = false;
   List<String>? _pickedFilePath;
   List<String>? _savedFilePath;
 
@@ -70,6 +70,23 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  Future<void> _fileMetadata(FileMetadataParams params) async {
+    FileMetadata result;
+    try {
+      setState(() {
+        _isBusy = true;
+      });
+      result = await _pickOrSavePlugin.fileMetaData(params: params);
+      log(result.toString());
+    } on PlatformException catch (e) {
+      log(e.toString());
+    }
+    if (!mounted) return;
+    setState(() {
+      _isBusy = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -95,10 +112,21 @@ class _MyAppState extends State<MyApp> {
                   onPressed: _isBusy
                       ? null
                       : () async {
+                          final params = FileMetadataParams(
+                            sourceFilePath: _pickedFilePath![0],
+                          );
+                          await _fileMetadata(params);
+                        },
+                  child: const Text("Get file metadata")),
+              OutlinedButton(
+                  onPressed: _isBusy
+                      ? null
+                      : () async {
                           final params = FilePickerParams(
                             localOnly: _localOnly,
                             copyFileToCacheDir: _copyFileToCacheDir,
                             filePickingType: FilePickingType.multiple,
+                            mimeTypeFilter: ["application/pdf"],
                           );
                           await _filePicker(params);
                         },

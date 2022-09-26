@@ -3,6 +3,7 @@ package com.deepanshuchaudhary.pick_or_save
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.database.Cursor
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.util.Log
@@ -15,6 +16,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 //https://developer.android.com/training/data-storage/shared/documents-files#open-file
 
@@ -123,7 +126,7 @@ class PickOrSave(
             if (sourceFilesPaths != null && sourceFilesPaths.isNotEmpty()) (if (sourceFilesPaths.size > 1) FileSavingType.MULTIPLE else FileSavingType.SINGLE) else if (data != null && data.isNotEmpty()) (if (data.size > 1) FileSavingType.MULTIPLE else FileSavingType.SINGLE) else FileSavingType.SINGLE
 
         if (filesNames != null && filesNames.isNotEmpty()) {
-            0.until(filesNames.size).map { index ->
+            filesNames.indices.map { index ->
                 val fileName = filesNames.elementAt(index)
                 val fileNameSuffix = "." + getFileExtension(fileName)
                 val fileNamePrefix = fileName.dropLast(fileNameSuffix.length)
@@ -135,7 +138,7 @@ class PickOrSave(
             if (sourceFilesPaths != null && sourceFilesPaths.isNotEmpty()) {
                 isSourceFileTemp = false
                 // Getting source files.
-                0.until(sourceFilesPaths.size).map { index ->
+                sourceFilesPaths.indices.map { index ->
                     val sourceFile = File(sourceFilesPaths.elementAt(index))
                     sourceFiles.add(sourceFile)
                 }
@@ -217,6 +220,101 @@ class PickOrSave(
             activity.startActivityForResult(intent, REQUEST_CODE_SAVE_FILE)
         }
         Log.d(LOG_TAG, "saveFile - OUT")
+    }
+
+    // For picking single file or multiple files.
+    fun fileMetaData(
+        result: MethodChannel.Result,
+        sourceFilePath: String?,
+    ) {
+        Log.d(
+            LOG_TAG,
+            "fileMetaData - IN, sourceFilePath=$sourceFilePath"
+        )
+
+        if (!setPendingResult(result)) {
+            finishWithAlreadyActiveError(result)
+            return
+        }
+
+        val contentResolver = activity.contentResolver
+
+        val fileMetaData: MutableList<String> = mutableListOf()
+
+
+        // The query, because it only applies to a single document, returns only
+        // one row. There's no need to filter, sort, or select fields,
+        // because we want all fields for one document.
+        val cursor: Cursor? = contentResolver.query(
+            Uri.parse(sourceFilePath), null, null, null, null, null
+        )
+
+        cursor?.use {
+            // moveToFirst() returns false if the cursor has 0 rows. Very handy for
+            // "if there's anything to look at, look at it" conditionals.
+            if (it.moveToFirst()) {
+
+                // Note it's called "Display Name". This is
+                // provider-specific, and might not necessarily be the file name.
+                val displayNameIndex: Int = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                val displayName: String = if (displayNameIndex >= 0) {
+                    it.getString(displayNameIndex)
+                } else {
+                    "Unknown"
+                }
+                Log.i(LOG_TAG, "Display Name: $displayName")
+
+                fileMetaData.add(displayName)
+
+                val sizeIndex: Int = it.getColumnIndex(OpenableColumns.SIZE)
+
+                // If the size is unknown, the value stored is null. But because an
+                // int can't be null, the behavior is implementation-specific,
+                // and unpredictable. So as
+                // a rule, check if it's null before assigning to an int. This will
+                // happen often: The storage API allows for remote files, whose
+                // size might not be locally known.
+                val size: String = if (!it.isNull(sizeIndex)) {
+                    // Technically the column stores an int, but cursor.getString()
+                    // will do the conversion automatically.
+                    it.getString(sizeIndex)
+                } else {
+                    "Unknown"
+                }
+                Log.i(LOG_TAG, "Size: $size")
+
+                fileMetaData.add(size)
+
+                val lastModified: String
+
+                val documentFile = DocumentFile.fromSingleUri(activity, Uri.parse(sourceFilePath))
+
+                lastModified = if (documentFile != null) {
+                    if (documentFile.lastModified() != 0.toLong()) {
+                        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss:SSSZ", Locale.ENGLISH).format(
+                            Date(documentFile.lastModified())
+                        )
+                    } else {
+                        "Unknown"
+                    }
+                } else {
+                    "Unknown"
+                }
+
+                Log.i(LOG_TAG, "LastModified: $lastModified")
+
+                fileMetaData.add(lastModified)
+
+            }
+        }
+
+        if (fileMetaData.size != 3) {
+            finishSuccessfully(null)
+        } else {
+            finishSuccessfully(fileMetaData)
+        }
+
+        Log.d(LOG_TAG, "fileMetaData - OUT")
     }
 
     private fun applyMimeTypesFilterToIntent(mimeTypesFilter: Array<String>?, intent: Intent) {

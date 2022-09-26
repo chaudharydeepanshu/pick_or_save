@@ -1,3 +1,7 @@
+## 0.0.4
+
+* Adds function to get metadata of a uri.
+
 ## 0.0.3
 
 * Fixes mimeTypeFilter not working.

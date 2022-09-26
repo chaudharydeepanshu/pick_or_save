@@ -141,6 +141,10 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 mimeTypesFilter = parseMethodCallArrayOfStringArgument(call, "mimeTypesFilter"),
                 localOnly = call.argument("localOnly") as Boolean? == true,
             )
+            "fileMetaData" -> pickOrSave!!.fileMetaData(
+                result,
+                sourceFilePath = call.argument("sourceFilePath")
+            )
             else -> result.notImplemented()
         }
     }

@@ -22,6 +22,21 @@ class MethodChannelPickOrSave extends PickOrSavePlatform {
         await methodChannel.invokeMethod<List?>('saveFiles', params?.toJson());
     return saved?.cast<String>();
   }
+
+  @override
+  Future<FileMetadata> fileMetaData({FileMetadataParams? params}) async {
+    final List? fileMetaData = await methodChannel.invokeMethod<List?>(
+        'fileMetaData', params?.toJson());
+    fileMetaData?.cast<String>();
+    if (fileMetaData != null) {
+      return FileMetadata(
+          displayName: fileMetaData[0],
+          size: fileMetaData[1],
+          lastModified: fileMetaData[2]);
+    } else {
+      return FileMetadata(displayName: null, size: null, lastModified: null);
+    }
+  }
 }
 
 /// File picking types for [filePicker].
@@ -122,5 +137,41 @@ class FileSaverParams {
       'mimeTypeFilter': mimeTypeFilter,
       'localOnly': localOnly
     };
+  }
+}
+
+/// Parameters for the [fileMetaData] method.
+class FileMetadataParams {
+  /// Path of the file.
+  final String sourceFilePath;
+
+  /// Create parameters for the [fileMetaData] method.
+  const FileMetadataParams({
+    required this.sourceFilePath,
+  });
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'sourceFilePath': sourceFilePath,
+    };
+  }
+}
+
+class FileMetadata {
+  final String? displayName;
+  final String? size;
+  final String? lastModified;
+
+  FileMetadata({
+    required this.displayName,
+    required this.size,
+    required this.lastModified,
+  });
+
+  // Implement toString to make it easier to see information
+  // when using the print statement.
+  @override
+  String toString() {
+    return 'FileMetadata{displayName: $displayName, size: $size, lastModified: $lastModified}';
   }
 }
