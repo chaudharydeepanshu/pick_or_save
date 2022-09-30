@@ -225,94 +225,115 @@ class PickOrSave(
     // For picking single file or multiple files.
     fun fileMetaData(
         result: MethodChannel.Result,
+        sourceFileUri: String?,
         sourceFilePath: String?,
     ) {
         Log.d(
             LOG_TAG,
-            "fileMetaData - IN, sourceFilePath=$sourceFilePath"
+            "fileMetaData - IN, sourceFileUri=$sourceFileUri, sourceFilePath=$sourceFilePath"
         )
 
         if (!setPendingResult(result)) {
-            finishWithAlreadyActiveError(result)
-            return
+            clearPendingResult();
         }
 
         val contentResolver = activity.contentResolver
 
         val fileMetaData: MutableList<String> = mutableListOf()
 
+        if (sourceFileUri != null) {
 
-        // The query, because it only applies to a single document, returns only
-        // one row. There's no need to filter, sort, or select fields,
-        // because we want all fields for one document.
-        val cursor: Cursor? = contentResolver.query(
-            Uri.parse(sourceFilePath), null, null, null, null, null
-        )
+            // The query, because it only applies to a single document, returns only
+            // one row. There's no need to filter, sort, or select fields,
+            // because we want all fields for one document.
+            val cursor: Cursor? = contentResolver.query(
+                Uri.parse(sourceFileUri), null, null, null, null, null
+            )
 
-        cursor?.use {
-            // moveToFirst() returns false if the cursor has 0 rows. Very handy for
-            // "if there's anything to look at, look at it" conditionals.
-            if (it.moveToFirst()) {
+            cursor?.use {
+                // moveToFirst() returns false if the cursor has 0 rows. Very handy for
+                // "if there's anything to look at, look at it" conditionals.
+                if (it.moveToFirst()) {
 
-                // Note it's called "Display Name". This is
-                // provider-specific, and might not necessarily be the file name.
-                val displayNameIndex: Int = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                val displayName: String = if (displayNameIndex >= 0) {
-                    it.getString(displayNameIndex)
-                } else {
-                    "Unknown"
-                }
-                Log.i(LOG_TAG, "Display Name: $displayName")
-
-                fileMetaData.add(displayName)
-
-                val sizeIndex: Int = it.getColumnIndex(OpenableColumns.SIZE)
-
-                // If the size is unknown, the value stored is null. But because an
-                // int can't be null, the behavior is implementation-specific,
-                // and unpredictable. So as
-                // a rule, check if it's null before assigning to an int. This will
-                // happen often: The storage API allows for remote files, whose
-                // size might not be locally known.
-                val size: String = if (!it.isNull(sizeIndex)) {
-                    // Technically the column stores an int, but cursor.getString()
-                    // will do the conversion automatically.
-                    it.getString(sizeIndex)
-                } else {
-                    "Unknown"
-                }
-                Log.i(LOG_TAG, "Size: $size")
-
-                fileMetaData.add(size)
-
-                val lastModified: String
-
-                val documentFile = DocumentFile.fromSingleUri(activity, Uri.parse(sourceFilePath))
-
-                lastModified = if (documentFile != null) {
-                    if (documentFile.lastModified() != 0.toLong()) {
-                        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ENGLISH).format(
-                            Date(documentFile.lastModified())
-                        )
+                    // Note it's called "Display Name". This is
+                    // provider-specific, and might not necessarily be the file name.
+                    val displayNameIndex: Int = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    val displayName: String = if (displayNameIndex >= 0) {
+                        it.getString(displayNameIndex)
                     } else {
                         "Unknown"
                     }
-                } else {
-                    "Unknown"
+                    Log.i(LOG_TAG, "Display Name: $displayName")
+
+                    fileMetaData.add(displayName)
+
+                    val sizeIndex: Int = it.getColumnIndex(OpenableColumns.SIZE)
+
+                    // If the size is unknown, the value stored is null. But because an
+                    // int can't be null, the behavior is implementation-specific,
+                    // and unpredictable. So as
+                    // a rule, check if it's null before assigning to an int. This will
+                    // happen often: The storage API allows for remote files, whose
+                    // size might not be locally known.
+                    val size: String = if (!it.isNull(sizeIndex)) {
+                        // Technically the column stores an int, but cursor.getString()
+                        // will do the conversion automatically.
+                        it.getString(sizeIndex)
+                    } else {
+                        "Unknown"
+                    }
+                    Log.i(LOG_TAG, "Size: $size")
+
+                    fileMetaData.add(size)
+
+                    val lastModified: String
+
+                    val documentFile =
+                        DocumentFile.fromSingleUri(activity, Uri.parse(sourceFileUri))
+
+                    lastModified = if (documentFile != null) {
+                        if (documentFile.lastModified() != 0.toLong()) {
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ENGLISH).format(
+                                Date(documentFile.lastModified())
+                            )
+                        } else {
+                            "Unknown"
+                        }
+                    } else {
+                        "Unknown"
+                    }
+
+                    Log.i(LOG_TAG, "LastModified: $lastModified")
+
+                    fileMetaData.add(lastModified)
+
                 }
-
-                Log.i(LOG_TAG, "LastModified: $lastModified")
-
-                fileMetaData.add(lastModified)
-
             }
+
+            if (fileMetaData.size != 3) {
+                finishSuccessfully(null)
+            } else {
+                finishSuccessfully(fileMetaData)
+            }
+        } else {
+            fileMetaData.clear()
+            val f = File(sourceFilePath!!)
+            if (f.exists()) {
+                fileMetaData.add(f.name)
+                fileMetaData.add(f.length().toString())
+                fileMetaData.add(
+                    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ENGLISH).format(
+                        Date(f.lastModified())
+                    )
+                )
+                finishSuccessfully(fileMetaData)
+            } else {
+                println("The File does not exist")
+                finishSuccessfully(null)
+            }
+
         }
 
-        if (fileMetaData.size != 3) {
-            finishSuccessfully(null)
-        } else {
-            finishSuccessfully(fileMetaData)
-        }
 
         Log.d(LOG_TAG, "fileMetaData - OUT")
     }
@@ -360,7 +381,7 @@ class PickOrSave(
                         data.clipData!!.getItemAt(index).uri
                     }
                     Log.d(LOG_TAG, "Picked files: $sourceFileUris")
-                    val destinationFilesNames = 0.until(sourceFileUris.size).map { index ->
+                    val destinationFilesNames = sourceFileUris.indices.map { index ->
                         getFileNameFromPickedDocumentUri(sourceFileUris.elementAt(index))
                     }
                     val isFilesTypeValid: Boolean = destinationFilesNames.all { fileName ->
@@ -379,7 +400,7 @@ class PickOrSave(
                     } else {
                         val invalidFilesTypes: MutableList<String?> = mutableListOf()
 
-                        0.until(destinationFilesNames.size).map { index ->
+                        destinationFilesNames.indices.map { index ->
                             val fileName = destinationFilesNames.elementAt(index)
                             if (fileName == null || !validateFileExtension(fileName)) {
                                 invalidFilesTypes.add(
@@ -453,7 +474,7 @@ class PickOrSave(
                 Log.d(LOG_TAG, "Launch...")
                 Log.d(LOG_TAG, "Copy on background...")
                 val filesPaths: MutableList<String> = mutableListOf()
-                0.until(destinationFilesNames.size).map { index ->
+                destinationFilesNames.indices.map { index ->
                     val destinationFileName = destinationFilesNames.elementAt(index)
                     val sourceFileUri = sourceFileUris.elementAt(index)
                     filesPaths.add(withContext(Dispatchers.IO) {
@@ -575,7 +596,7 @@ class PickOrSave(
                     destinationDirectoryUri
                 )
                 val filesPaths: MutableList<String> = mutableListOf()
-                0.until(sourceFiles.size).map { index ->
+                sourceFiles.indices.map { index ->
                     val sourceFile = sourceFiles.elementAt(index)
                     val sourceFileMimeType =
                         MimeTypeMap.getSingleton().getMimeTypeFromExtension(sourceFile.extension)
@@ -606,7 +627,7 @@ class PickOrSave(
             } finally {
                 if (isSourceFileTemp) {
                     Log.d(LOG_TAG, "Deleting source files: $sourceFiles")
-                    0.until(sourceFiles.size).map { index ->
+                    sourceFiles.indices.map { index ->
                         val sourceFile = sourceFiles.elementAt(index)
                         sourceFile.delete()
                     }
@@ -677,8 +698,8 @@ class PickOrSave(
         result.error("already_active", "File dialog is already active", null)
     }
 
-    private fun finishSuccessfully(filesPaths: List<String>?) {
-        pendingResult?.success(filesPaths)
+    private fun finishSuccessfully(result: List<String>?) {
+        pendingResult?.success(result)
         clearPendingResult()
     }
 

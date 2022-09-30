@@ -10,7 +10,7 @@ Note: Although this package supports picking and caching files by default to wor
 
 - Works on Android 5.0 (API level 21) or later.
 - Pick single file or multiple files.
-- Get meta data like name, size and last modified for files using uri.
+- Get meta data like name, size and last modified for files.
 - Saves single file while allowing user to choose location and name.
 - Saves multiple file while allowing user to choose location or directory for saving all files.
 - Saves file from either file path or file data.
@@ -91,7 +91,6 @@ List<String>? savedFilesPaths = await PickOrSave().fileSaver(
 
 ```dart
 FileMetadata result = await PickOrSave().fileMetaData(
-  params: FileMetadataParams(sourceFilePath: fileUri),
+  params: FileMetadataParams(sourceFileUri: fileUri),
 );
 ```
-Note: This is a test functionality and only supports uri paths which are obtained from file picking when ```copyFileToCacheDir = false```.

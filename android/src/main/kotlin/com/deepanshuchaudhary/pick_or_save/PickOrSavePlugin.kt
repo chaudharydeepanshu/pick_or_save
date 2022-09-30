@@ -1,7 +1,6 @@
 package com.deepanshuchaudhary.pick_or_save
 
 import android.util.Log
-import androidx.annotation.NonNull
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -28,7 +27,7 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         const val LOG_TAG = "PickOrSavePlugin"
     }
 
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         Log.d(LOG_TAG, "onAttachedToEngine - IN")
 
         if (pluginBinding != null) {
@@ -43,13 +42,13 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         Log.d(LOG_TAG, "onAttachedToEngine - OUT")
     }
 
-    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         Log.d(LOG_TAG, "onDetachedFromEngine")
         doOnDetachedFromEngine()
     }
 
     // note: this may be called multiple times on app startup
-    override fun onAttachedToActivity(@NonNull binding: ActivityPluginBinding) {
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         Log.d(LOG_TAG, "onAttachedToActivity")
         doOnAttachedToActivity(binding)
     }
@@ -59,7 +58,7 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         doOnDetachedFromActivity()
     }
 
-    override fun onReattachedToActivityForConfigChanges(@NonNull binding: ActivityPluginBinding) {
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
         Log.d(LOG_TAG, "onReattachedToActivityForConfigChanges")
         doOnAttachedToActivity(binding)
     }
@@ -69,7 +68,7 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         doOnDetachedFromActivity()
     }
 
-    private fun doOnAttachedToEngine(@NonNull messenger: BinaryMessenger) {
+    private fun doOnAttachedToEngine(messenger: BinaryMessenger) {
         Log.d(LOG_TAG, "doOnAttachedToEngine - IN")
 
         this.channel = MethodChannel(messenger, "pick_or_save")
@@ -91,7 +90,7 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         Log.d(LOG_TAG, "doOnDetachedFromEngine - OUT")
     }
 
-    private fun doOnAttachedToActivity(@NonNull activityBinding: ActivityPluginBinding?) {
+    private fun doOnAttachedToActivity(activityBinding: ActivityPluginBinding?) {
         Log.d(LOG_TAG, "doOnAttachedToActivity - IN")
 
         this.activityBinding = activityBinding
@@ -112,7 +111,7 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
 
-    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+    override fun onMethodCall(call: MethodCall, result: Result) {
         Log.d(LOG_TAG, "onMethodCall - IN , method=${call.method}")
         if (pickOrSave == null) {
             if (!createPickOrSave()) {
@@ -143,6 +142,7 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             )
             "fileMetaData" -> pickOrSave!!.fileMetaData(
                 result,
+                sourceFileUri = call.argument("sourceFileUri"),
                 sourceFilePath = call.argument("sourceFilePath")
             )
             else -> result.notImplemented()
@@ -167,8 +167,8 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun parseMethodCallArrayOfStringArgument(
-        @NonNull call: MethodCall,
-        @NonNull arg: String
+        call: MethodCall,
+        arg: String
     ): Array<String>? {
         if (call.hasArgument(arg)) {
             return call.argument<ArrayList<String>>(arg)?.toTypedArray()
@@ -177,8 +177,8 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun parseMethodCallArrayOfByteArgument(
-        @NonNull call: MethodCall,
-        @NonNull arg: String
+        call: MethodCall,
+        arg: String
     ): Array<ByteArray>? {
         if (call.hasArgument(arg)) {
             return call.argument<ArrayList<ByteArray>>(arg)?.toTypedArray()
@@ -186,7 +186,7 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         return null
     }
 
-    private fun parseMethodCallFilePickingTypeArgument(@NonNull call: MethodCall): FilePickingType? {
+    private fun parseMethodCallFilePickingTypeArgument(call: MethodCall): FilePickingType? {
         val arg = "filePickingType"
         if (call.hasArgument(arg)) {
             return if (call.argument<String>(arg)?.toString() == "FilePickingType.multiple") {

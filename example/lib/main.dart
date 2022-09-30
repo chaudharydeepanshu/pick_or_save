@@ -113,7 +113,7 @@ class _MyAppState extends State<MyApp> {
                       ? null
                       : () async {
                           final params = FileMetadataParams(
-                            sourceFilePath: _pickedFilePath![0],
+                            sourceFileUri: _pickedFilePath![0],
                           );
                           await _fileMetadata(params);
                         },

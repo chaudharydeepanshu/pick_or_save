@@ -1,3 +1,12 @@
+## 0.0.7
+
+* Fixes file metadata not working for URI.
+
+## 0.0.6
+
+* Allows using absolute file path for metadata.
+* **Breaking:** Use ```sourceFileUri``` for URIs and ```sourceFilePath``` for absolute file paths to get metadata.
+
 ## 0.0.5
 
 * Fixes file metadata last modified format.

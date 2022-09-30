@@ -143,16 +143,22 @@ class FileSaverParams {
 /// Parameters for the [fileMetaData] method.
 class FileMetadataParams {
   /// Path of the file.
-  final String sourceFilePath;
+  final String? sourceFilePath;
+
+  /// URI of the file.
+  final String? sourceFileUri;
 
   /// Create parameters for the [fileMetaData] method.
   const FileMetadataParams({
-    required this.sourceFilePath,
-  });
+    this.sourceFilePath,
+    this.sourceFileUri,
+  }) : assert(sourceFileUri == null || sourceFilePath == null,
+            'sourceFilePath or sourceFileURI should be null');
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'sourceFilePath': sourceFilePath,
+      'sourceFileUri': sourceFileUri,
     };
   }
 }
