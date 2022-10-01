@@ -70,35 +70,50 @@ class PickOrSave(
         copyFileToCacheDir: Boolean,
         filePickingType: FilePickingType
     ) {
-        Log.d(
-            LOG_TAG,
-            "pickFile - IN, fileExtensionsFilter=$fileExtensionsFilter, mimeTypesFilter=$mimeTypeFilter, localOnly=$localOnly, copyFileToCacheDir=$copyFileToCacheDir, filePickingType=$filePickingType"
-        )
+        try {
+            Log.d(
+                LOG_TAG,
+                "pickFile - IN, fileExtensionsFilter=$fileExtensionsFilter, mimeTypesFilter=$mimeTypeFilter, localOnly=$localOnly, copyFileToCacheDir=$copyFileToCacheDir, filePickingType=$filePickingType"
+            )
 
-        if (!setPendingResult(result)) {
-            finishWithAlreadyActiveError(result)
-            return
+            if (!setPendingResult(result)) {
+                finishWithAlreadyActiveError(result)
+                return
+            }
+
+            this.fileExtensionsFilter = fileExtensionsFilter
+            this.copyPickedFileToCacheDir = copyFileToCacheDir
+            this.filePickingType = filePickingType
+
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+            intent.addCategory(Intent.CATEGORY_OPENABLE)
+            if (localOnly) {
+                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
+            }
+            if (filePickingType == FilePickingType.MULTIPLE) {
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+            }
+
+            intent.type = "*/*"
+            applyMimeTypesFilterToIntent(mimeTypeFilter, intent)
+
+            activity.startActivityForResult(intent, REQUEST_CODE_PICK_FILE)
+
+            Log.d(LOG_TAG, "pickFile - OUT")
+
+        } catch (e: Exception) {
+            finishWithError(
+                "pickFile_exception",
+                e.stackTraceToString(),
+                null
+            )
+        } catch (e: Error) {
+            finishWithError(
+                "pickFile_error",
+                e.stackTraceToString(),
+                null
+            )
         }
-
-        this.fileExtensionsFilter = fileExtensionsFilter
-        this.copyPickedFileToCacheDir = copyFileToCacheDir
-        this.filePickingType = filePickingType
-
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-        if (localOnly) {
-            intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
-        }
-        if (filePickingType == FilePickingType.MULTIPLE) {
-            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-        }
-
-        intent.type = "*/*"
-        applyMimeTypesFilterToIntent(mimeTypeFilter, intent)
-
-        activity.startActivityForResult(intent, REQUEST_CODE_PICK_FILE)
-
-        Log.d(LOG_TAG, "pickFile - OUT")
     }
 
     // For saving single file or multiple files.
@@ -110,116 +125,132 @@ class PickOrSave(
         mimeTypesFilter: Array<String>?,
         localOnly: Boolean
     ) {
-        Log.d(
-            LOG_TAG, "saveFile - IN, sourceFilesPaths=$sourceFilesPaths, " +
-                    "data=${data?.size} bytes, filesNames=$filesNames, " +
-                    "mimeTypesFilter=$mimeTypesFilter, localOnly=$localOnly"
-        )
+        try {
 
-        if (!setPendingResult(result)) {
-            finishWithAlreadyActiveError(result)
-            return
-        }
-        sourceFilesNamesPrefixes.clear()
-        sourceFiles.clear()
-        fileSavingType =
-            if (sourceFilesPaths != null && sourceFilesPaths.isNotEmpty()) (if (sourceFilesPaths.size > 1) FileSavingType.MULTIPLE else FileSavingType.SINGLE) else if (data != null && data.isNotEmpty()) (if (data.size > 1) FileSavingType.MULTIPLE else FileSavingType.SINGLE) else FileSavingType.SINGLE
+            Log.d(
+                LOG_TAG, "saveFile - IN, sourceFilesPaths=$sourceFilesPaths, " +
+                        "data=${data?.size} bytes, filesNames=$filesNames, " +
+                        "mimeTypesFilter=$mimeTypesFilter, localOnly=$localOnly"
+            )
 
-        if (filesNames != null && filesNames.isNotEmpty()) {
-            filesNames.indices.map { index ->
-                val fileName = filesNames.elementAt(index)
-                val fileNameSuffix = "." + getFileExtension(fileName)
-                val fileNamePrefix = fileName.dropLast(fileNameSuffix.length)
-                sourceFilesNamesPrefixes.add(fileNamePrefix)
+            if (!setPendingResult(result)) {
+                finishWithAlreadyActiveError(result)
+                return
             }
-        }
+            sourceFilesNamesPrefixes.clear()
+            sourceFiles.clear()
+            fileSavingType =
+                if (sourceFilesPaths != null && sourceFilesPaths.isNotEmpty()) (if (sourceFilesPaths.size > 1) FileSavingType.MULTIPLE else FileSavingType.SINGLE) else if (data != null && data.isNotEmpty()) (if (data.size > 1) FileSavingType.MULTIPLE else FileSavingType.SINGLE) else FileSavingType.SINGLE
 
-        if (fileSavingType == FileSavingType.MULTIPLE) {
-            if (sourceFilesPaths != null && sourceFilesPaths.isNotEmpty()) {
-                isSourceFileTemp = false
-                // Getting source files.
-                sourceFilesPaths.indices.map { index ->
-                    val sourceFile = File(sourceFilesPaths.elementAt(index))
-                    sourceFiles.add(sourceFile)
+            if (filesNames != null && filesNames.isNotEmpty()) {
+                filesNames.indices.map { index ->
+                    val fileName = filesNames.elementAt(index)
+                    val fileNameSuffix = "." + getFileExtension(fileName)
+                    val fileNamePrefix = fileName.dropLast(fileNameSuffix.length)
+                    sourceFilesNamesPrefixes.add(fileNamePrefix)
                 }
-                val isSourceFilesExists: Boolean = sourceFiles.all { file -> file.exists() }
-                if (!isSourceFilesExists) {
-                    finishWithError(
-                        "file_not_found",
-                        "Source file is missing",
-                        sourceFilesPaths.toString()
-                    )
-                    return
+            }
+
+            if (fileSavingType == FileSavingType.MULTIPLE) {
+                if (sourceFilesPaths != null && sourceFilesPaths.isNotEmpty()) {
+                    isSourceFileTemp = false
+                    // Getting source files.
+                    sourceFilesPaths.indices.map { index ->
+                        val sourceFile = File(sourceFilesPaths.elementAt(index))
+                        sourceFiles.add(sourceFile)
+                    }
+                    val isSourceFilesExists: Boolean = sourceFiles.all { file -> file.exists() }
+                    if (!isSourceFilesExists) {
+                        finishWithError(
+                            "file_not_found",
+                            "Source file is missing",
+                            sourceFilesPaths.toString()
+                        )
+                        return
+                    }
+                } else {
+                    // Writing data to temporary files.
+                    isSourceFileTemp = true
+                    0.until(data!!.size).map { index ->
+                        val fileName = filesNames!!.elementAt(index)
+                        val fileNameSuffix = "." + getFileExtension(fileName)
+                        val fileNamePrefix = fileName.dropLast(fileNameSuffix.length)
+                        val sourceFile: File = File.createTempFile(fileNamePrefix, fileNameSuffix)
+                        sourceFile.writeBytes(data.elementAt(index))
+                        sourceFiles.add(sourceFile)
+                        Log.d(LOG_TAG, sourceFile.name)
+                    }
                 }
+
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                if (localOnly) {
+                    intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
+                }
+
+                activity.startActivityForResult(intent, REQUEST_CODE_SAVE_MULTIPLE_FILES)
             } else {
-                // Writing data to temporary files.
-                isSourceFileTemp = true
-                0.until(data!!.size).map { index ->
-                    val fileName = filesNames!!.elementAt(index)
+                if (sourceFilesPaths != null && sourceFilesPaths.isNotEmpty()) {
+                    isSourceFileTemp = false
+                    // Getting source file.
+                    sourceFiles.add(File(sourceFilesPaths[0]))
+                    if (!sourceFiles[0].exists()) {
+                        finishWithError(
+                            "file_not_found",
+                            "Source file is missing",
+                            sourceFilesPaths[0]
+                        )
+                        return
+                    }
+                } else {
+                    // Writing data to temporary file.
+                    isSourceFileTemp = true
+                    val fileName = filesNames?.get(0)!!
                     val fileNameSuffix = "." + getFileExtension(fileName)
                     val fileNamePrefix = fileName.dropLast(fileNameSuffix.length)
                     val sourceFile: File = File.createTempFile(fileNamePrefix, fileNameSuffix)
-                    sourceFile.writeBytes(data.elementAt(index))
+                    sourceFile.writeBytes(data?.get(0)!!)
                     sourceFiles.add(sourceFile)
-                    Log.d(LOG_TAG, sourceFile.name)
                 }
-            }
 
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-            if (localOnly) {
-                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
-            }
-
-            activity.startActivityForResult(intent, REQUEST_CODE_SAVE_MULTIPLE_FILES)
-        } else {
-            if (sourceFilesPaths != null && sourceFilesPaths.isNotEmpty()) {
-                isSourceFileTemp = false
-                // Getting source file.
-                sourceFiles.add(File(sourceFilesPaths[0]))
-                if (!sourceFiles[0].exists()) {
-                    finishWithError(
-                        "file_not_found",
-                        "Source file is missing",
-                        sourceFilesPaths[0]
-                    )
-                    return
+                val sourceFileNamePrefix = if (sourceFilesNamesPrefixes.isNotEmpty()) {
+                    sourceFilesNamesPrefixes[0]
+                } else {
+                    val sourceFileName = sourceFiles[0].name
+                    val fileNameSuffix = "." + getFileExtension(sourceFileName)
+                    sourceFileName.dropLast(fileNameSuffix.length)
                 }
-            } else {
-                // Writing data to temporary file.
-                isSourceFileTemp = true
-                val fileName = filesNames?.get(0)!!
-                val fileNameSuffix = "." + getFileExtension(fileName)
-                val fileNamePrefix = fileName.dropLast(fileNameSuffix.length)
-                val sourceFile: File = File.createTempFile(fileNamePrefix, fileNameSuffix)
-                sourceFile.writeBytes(data?.get(0)!!)
-                sourceFiles.add(sourceFile)
+
+                val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+                intent.addCategory(Intent.CATEGORY_OPENABLE)
+                intent.putExtra(Intent.EXTRA_TITLE, sourceFileNamePrefix)
+                if (localOnly) {
+                    intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
+                }
+
+                // Setting mimeType for file saving dialog to avoid adding extension manually when saving.
+                val sourceFileMimeType =
+                    MimeTypeMap.getSingleton().getMimeTypeFromExtension(sourceFiles[0].extension)
+                intent.type = sourceFileMimeType ?: "*/*"
+
+                applyMimeTypesFilterToIntent(mimeTypesFilter, intent)
+
+                activity.startActivityForResult(intent, REQUEST_CODE_SAVE_FILE)
             }
+            Log.d(LOG_TAG, "saveFile - OUT")
 
-            val sourceFileNamePrefix = if (sourceFilesNamesPrefixes.isNotEmpty()) {
-                sourceFilesNamesPrefixes[0]
-            } else {
-                val sourceFileName = sourceFiles[0].name
-                val fileNameSuffix = "." + getFileExtension(sourceFileName)
-                sourceFileName.dropLast(fileNameSuffix.length)
-            }
-
-            val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-            intent.addCategory(Intent.CATEGORY_OPENABLE)
-            intent.putExtra(Intent.EXTRA_TITLE, sourceFileNamePrefix)
-            if (localOnly) {
-                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
-            }
-
-            // Setting mimeType for file saving dialog to avoid adding extension manually when saving.
-            val sourceFileMimeType =
-                MimeTypeMap.getSingleton().getMimeTypeFromExtension(sourceFiles[0].extension)
-            intent.type = sourceFileMimeType ?: "*/*"
-
-            applyMimeTypesFilterToIntent(mimeTypesFilter, intent)
-
-            activity.startActivityForResult(intent, REQUEST_CODE_SAVE_FILE)
+        } catch (e: Exception) {
+            finishWithError(
+                "saveFile_exception",
+                e.stackTraceToString(),
+                null
+            )
+        } catch (e: Error) {
+            finishWithError(
+                "saveFile_error",
+                e.stackTraceToString(),
+                null
+            )
         }
-        Log.d(LOG_TAG, "saveFile - OUT")
     }
 
     // For picking single file or multiple files.
@@ -228,114 +259,135 @@ class PickOrSave(
         sourceFileUri: String?,
         sourceFilePath: String?,
     ) {
-        Log.d(
-            LOG_TAG,
-            "fileMetaData - IN, sourceFileUri=$sourceFileUri, sourceFilePath=$sourceFilePath"
-        )
 
-        if (!setPendingResult(result)) {
-            clearPendingResult();
-        }
+        try {
 
-        val contentResolver = activity.contentResolver
-
-        val fileMetaData: MutableList<String> = mutableListOf()
-
-        if (sourceFileUri != null) {
-
-            // The query, because it only applies to a single document, returns only
-            // one row. There's no need to filter, sort, or select fields,
-            // because we want all fields for one document.
-            val cursor: Cursor? = contentResolver.query(
-                Uri.parse(sourceFileUri), null, null, null, null, null
+            Log.d(
+                LOG_TAG,
+                "fileMetaData - IN, sourceFileUri=$sourceFileUri, sourceFilePath=$sourceFilePath"
             )
 
-            cursor?.use {
-                // moveToFirst() returns false if the cursor has 0 rows. Very handy for
-                // "if there's anything to look at, look at it" conditionals.
-                if (it.moveToFirst()) {
+            if (!setPendingResult(result)) {
+                clearPendingResult()
+            }
 
-                    // Note it's called "Display Name". This is
-                    // provider-specific, and might not necessarily be the file name.
-                    val displayNameIndex: Int = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                    val displayName: String = if (displayNameIndex >= 0) {
-                        it.getString(displayNameIndex)
-                    } else {
-                        "Unknown"
-                    }
-                    Log.i(LOG_TAG, "Display Name: $displayName")
+            val contentResolver = activity.contentResolver
 
-                    fileMetaData.add(displayName)
+            val fileMetaData: MutableList<String> = mutableListOf()
 
-                    val sizeIndex: Int = it.getColumnIndex(OpenableColumns.SIZE)
+            if (sourceFileUri != null) {
 
-                    // If the size is unknown, the value stored is null. But because an
-                    // int can't be null, the behavior is implementation-specific,
-                    // and unpredictable. So as
-                    // a rule, check if it's null before assigning to an int. This will
-                    // happen often: The storage API allows for remote files, whose
-                    // size might not be locally known.
-                    val size: String = if (!it.isNull(sizeIndex)) {
-                        // Technically the column stores an int, but cursor.getString()
-                        // will do the conversion automatically.
-                        it.getString(sizeIndex)
-                    } else {
-                        "Unknown"
-                    }
-                    Log.i(LOG_TAG, "Size: $size")
+                // The query, because it only applies to a single document, returns only
+                // one row. There's no need to filter, sort, or select fields,
+                // because we want all fields for one document.
+                val cursor: Cursor? = contentResolver.query(
+                    Uri.parse(sourceFileUri), null, null, null, null, null
+                )
 
-                    fileMetaData.add(size)
+                cursor?.use {
+                    // moveToFirst() returns false if the cursor has 0 rows. Very handy for
+                    // "if there's anything to look at, look at it" conditionals.
+                    if (it.moveToFirst()) {
 
-                    val lastModified: String
-
-                    val documentFile =
-                        DocumentFile.fromSingleUri(activity, Uri.parse(sourceFileUri))
-
-                    lastModified = if (documentFile != null) {
-                        if (documentFile.lastModified() != 0.toLong()) {
-                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ENGLISH).format(
-                                Date(documentFile.lastModified())
-                            )
+                        // Note it's called "Display Name". This is
+                        // provider-specific, and might not necessarily be the file name.
+                        val displayNameIndex: Int = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                        val displayName: String = if (displayNameIndex >= 0) {
+                            it.getString(displayNameIndex)
                         } else {
                             "Unknown"
                         }
-                    } else {
-                        "Unknown"
+                        Log.i(LOG_TAG, "Display Name: $displayName")
+
+                        fileMetaData.add(displayName)
+
+                        val sizeIndex: Int = it.getColumnIndex(OpenableColumns.SIZE)
+
+                        // If the size is unknown, the value stored is null. But because an
+                        // int can't be null, the behavior is implementation-specific,
+                        // and unpredictable. So as
+                        // a rule, check if it's null before assigning to an int. This will
+                        // happen often: The storage API allows for remote files, whose
+                        // size might not be locally known.
+                        val size: String = if (!it.isNull(sizeIndex)) {
+                            // Technically the column stores an int, but cursor.getString()
+                            // will do the conversion automatically.
+                            it.getString(sizeIndex)
+                        } else {
+                            "Unknown"
+                        }
+                        Log.i(LOG_TAG, "Size: $size")
+
+                        fileMetaData.add(size)
+
+                        val lastModified: String
+
+                        val documentFile =
+                            DocumentFile.fromSingleUri(activity, Uri.parse(sourceFileUri))
+
+                        lastModified = if (documentFile != null) {
+                            if (documentFile.lastModified() != 0.toLong()) {
+                                SimpleDateFormat(
+                                    "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+                                    Locale.ENGLISH
+                                ).format(
+                                    Date(documentFile.lastModified())
+                                )
+                            } else {
+                                "Unknown"
+                            }
+                        } else {
+                            "Unknown"
+                        }
+
+                        Log.i(LOG_TAG, "LastModified: $lastModified")
+
+                        fileMetaData.add(lastModified)
+
                     }
-
-                    Log.i(LOG_TAG, "LastModified: $lastModified")
-
-                    fileMetaData.add(lastModified)
-
                 }
-            }
 
-            if (fileMetaData.size != 3) {
-                finishSuccessfully(null)
+                if (fileMetaData.size != 3) {
+                    finishSuccessfully(null)
+                } else {
+                    finishSuccessfully(fileMetaData)
+                }
             } else {
-                finishSuccessfully(fileMetaData)
-            }
-        } else {
-            fileMetaData.clear()
-            val f = File(sourceFilePath!!)
-            if (f.exists()) {
-                fileMetaData.add(f.name)
-                fileMetaData.add(f.length().toString())
-                fileMetaData.add(
-                    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ENGLISH).format(
-                        Date(f.lastModified())
+                fileMetaData.clear()
+                val f = File(sourceFilePath!!)
+                if (f.exists()) {
+                    fileMetaData.add(f.name)
+                    fileMetaData.add(f.length().toString())
+                    fileMetaData.add(
+                        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ENGLISH).format(
+                            Date(f.lastModified())
+                        )
                     )
-                )
-                finishSuccessfully(fileMetaData)
-            } else {
-                println("The File does not exist")
-                finishSuccessfully(null)
+                    finishSuccessfully(fileMetaData)
+                } else {
+                    println("The File does not exist")
+                    finishSuccessfully(null)
+                }
+
             }
 
+
+            Log.d(LOG_TAG, "fileMetaData - OUT")
+
+
+        } catch (e: Exception) {
+            finishWithError(
+                "pickFile_exception",
+                e.stackTraceToString(),
+                null
+            )
+        } catch (e: Error) {
+            finishWithError(
+                "pickFile_error",
+                e.stackTraceToString(),
+                null
+            )
         }
-
-
-        Log.d(LOG_TAG, "fileMetaData - OUT")
     }
 
     private fun applyMimeTypesFilterToIntent(mimeTypesFilter: Array<String>?, intent: Intent) {

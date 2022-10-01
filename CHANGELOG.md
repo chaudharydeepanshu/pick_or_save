@@ -1,3 +1,8 @@
+## 0.0.8
+
+* Tackles exceptions and errors.
+* Fixes "Dialog already active" error on retrying a failed save.
+
 ## 0.0.7
 
 * Fixes file metadata not working for URI.

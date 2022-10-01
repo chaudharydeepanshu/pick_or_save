@@ -122,7 +122,11 @@ class FileSaverParams {
       this.filesNames,
       this.mimeTypeFilter,
       this.localOnly = false})
-      : assert(sourceFilesPaths == null || data == null,
+      : assert(sourceFilesPaths?.length != 0 || data?.length != 0,
+            'don\'t provide empty list for sourceFilePath or sourceFileURI'),
+        assert(sourceFilesPaths != null || data != null,
+            'provide anyone out of sourceFilePath or sourceFileURI'),
+        assert(sourceFilesPaths == null || data == null,
             'sourceFilesPaths or data should be null'),
         assert(sourceFilesPaths != null || data != null,
             'Missing sourceFilesPaths or data'),
