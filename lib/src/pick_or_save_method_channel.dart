@@ -122,14 +122,12 @@ class FileSaverParams {
       this.filesNames,
       this.mimeTypeFilter,
       this.localOnly = false})
-      : assert(sourceFilesPaths?.length != 0 || data?.length != 0,
-            'don\'t provide empty list for sourceFilePath or sourceFileURI'),
-        assert(sourceFilesPaths != null || data != null,
-            'provide anyone out of sourceFilePath or sourceFileURI'),
+      : assert(
+            sourceFilesPaths != null && sourceFilesPaths.length != 0 ||
+                data != null && data.length != 0,
+            'provide anyone out of sourceFilesPaths or data with non null and non empty list'),
         assert(sourceFilesPaths == null || data == null,
             'sourceFilesPaths or data should be null'),
-        assert(sourceFilesPaths != null || data != null,
-            'Missing sourceFilesPaths or data'),
         assert(data == null || (filesNames != null && filesNames.length != 0),
             'Missing filesNames');
 
@@ -156,7 +154,9 @@ class FileMetadataParams {
   const FileMetadataParams({
     this.sourceFilePath,
     this.sourceFileUri,
-  }) : assert(sourceFileUri == null || sourceFilePath == null,
+  })  : assert(sourceFileUri != null || sourceFilePath != null,
+            'provide anyone out of sourceFilePath or sourceFileURI'),
+        assert(sourceFileUri == null || sourceFilePath == null,
             'sourceFilePath or sourceFileURI should be null');
 
   Map<String, dynamic> toJson() {

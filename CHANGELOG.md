@@ -1,3 +1,7 @@
+## 0.0.9
+
+* Added more assertions on saving files.
+
 ## 0.0.8
 
 * Tackles exceptions and errors.
