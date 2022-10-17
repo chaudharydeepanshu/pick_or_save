@@ -11,10 +11,7 @@ import android.webkit.MimeTypeMap
 import androidx.documentfile.provider.DocumentFile
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -43,6 +40,8 @@ enum class FileSavingType { SINGLE, MULTIPLE }
 class PickOrSave(
     private val activity: Activity
 ) : PluginRegistry.ActivityResultListener {
+
+    private var job: Job? = null
 
     private var pendingResult: MethodChannel.Result? = null
     private var fileExtensionsFilter: Array<String>? = null
@@ -133,10 +132,13 @@ class PickOrSave(
                         "mimeTypesFilter=$mimeTypesFilter, localOnly=$localOnly"
             )
 
+            cancelFilesSaving()
+
             if (!setPendingResult(result)) {
                 finishWithAlreadyActiveError(result)
                 return
             }
+
             sourceFilesNamesPrefixes.clear()
             sourceFiles.clear()
             fileSavingType =
@@ -640,7 +642,7 @@ class PickOrSave(
         destinationDirectoryUri: Uri
     ) {
         val uiScope = CoroutineScope(Dispatchers.Main)
-        uiScope.launch {
+        job = uiScope.launch {
             try {
                 Log.d(LOG_TAG, "Saving file on background...")
                 val outputFolder: DocumentFile? = DocumentFile.fromTreeUri(
@@ -649,6 +651,7 @@ class PickOrSave(
                 )
                 val filesPaths: MutableList<String> = mutableListOf()
                 sourceFiles.indices.map { index ->
+                    yield()
                     val sourceFile = sourceFiles.elementAt(index)
                     val sourceFileMimeType =
                         MimeTypeMap.getSingleton().getMimeTypeFromExtension(sourceFile.extension)
@@ -730,6 +733,13 @@ class PickOrSave(
         }
         Log.d(LOG_TAG, "Saved file to '${destinationFileUri.path}'")
         return destinationFileUri.path!!
+    }
+
+    fun cancelFilesSaving(
+    ) {
+        job?.cancel()
+        clearPendingResult()
+        Log.d(LOG_TAG, "Canceled File Saving")
     }
 
     private fun setPendingResult(

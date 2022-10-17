@@ -1,3 +1,9 @@
+## 0.1.1
+
+* Added `cancelFilesSaving()` to cancel saving files.
+* Automatically cancels ongoing saving of files when trying to save new files.
+* Fixed example.
+
 ## 0.0.9
 
 * Added more assertions on saving files.

@@ -37,6 +37,13 @@ class MethodChannelPickOrSave extends PickOrSavePlatform {
       return FileMetadata(displayName: null, size: null, lastModified: null);
     }
   }
+
+  @override
+  Future<String?> cancelFilesSaving() async {
+    final String? result =
+        await methodChannel.invokeMethod<String?>('cancelFilesSaving');
+    return result;
+  }
 }
 
 /// File picking types for [filePicker].

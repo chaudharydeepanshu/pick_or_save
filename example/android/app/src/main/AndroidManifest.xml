@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.deepanshuchaudhary.pick_or_save_example">
    <application
         android:label="pick_or_save_example"
         android:name="${applicationName}"

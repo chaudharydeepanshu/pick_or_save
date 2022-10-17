@@ -27,4 +27,11 @@ class PickOrSave {
   Future<FileMetadata> fileMetaData({FileMetadataParams? params}) {
     return PickOrSavePlatform.instance.fileMetaData(params: params);
   }
+
+  /// Cancels running file saves.
+  ///
+  /// Returns the cancelling message.
+  Future<String?> cancelFilesSaving() {
+    return PickOrSavePlatform.instance.cancelFilesSaving();
+  }
 }
