@@ -417,43 +417,59 @@ class PickOrSave(
                         data.clipData!!.getItemAt(index).uri
                     }
                     Log.d(LOG_TAG, "Picked files: $sourceFileUris")
+                    val invalidFilesUris = mutableListOf<Uri>()
+                    val validFilesUris = mutableListOf<Uri>()
                     val destinationFilesNames = sourceFileUris.indices.map { index ->
-                        getFileNameFromPickedDocumentUri(sourceFileUris.elementAt(index))
-                    }
-                    val isFilesTypeValid: Boolean = destinationFilesNames.all { fileName ->
-                        fileName != null && validateFileExtension(fileName)
-                    }
-                    if (isFilesTypeValid) {
-                        if (copyPickedFileToCacheDir) {
-                            copyMultipleFilesToCacheDirOnBackground(
-                                context = activity,
-                                sourceFileUris = sourceFileUris,
-                                destinationFilesNames = destinationFilesNames.filterNotNull()
-                            )
-                        } else {
-                            finishSuccessfully(sourceFileUris.map { uri -> uri.toString() })
-                        }
-                    } else {
-                        val invalidFilesTypes: MutableList<String?> = mutableListOf()
 
-                        destinationFilesNames.indices.map { index ->
-                            val fileName = destinationFilesNames.elementAt(index)
-                            if (fileName == null || !validateFileExtension(fileName)) {
-                                invalidFilesTypes.add(
-                                    getFileExtension(
-                                        destinationFilesNames.elementAt(
-                                            index
-                                        )
+                        val destinationFileName =
+                            getFileNameFromPickedDocumentUri(sourceFileUris.elementAt(index))
+
+                        val isFileTypeValid =
+                            destinationFileName != null && validateFileExtension(destinationFileName)
+
+                        if (isFileTypeValid) {
+                            validFilesUris.add(sourceFileUris.elementAt(index))
+                        } else {
+                            invalidFilesUris.add(sourceFileUris.elementAt(index))
+                        }
+
+                        destinationFileName
+
+                    }
+
+                    if (copyPickedFileToCacheDir) {
+                        copyMultipleFilesToCacheDirOnBackground(context = activity,
+                            sourceFileUris = validFilesUris,
+                            destinationFilesNames = validFilesUris.indices.mapNotNull { index ->
+                                getFileNameFromPickedDocumentUri(
+                                    validFilesUris.elementAt(index)
+                                )
+                            })
+                    } else {
+                        finishSuccessfully(validFilesUris.map { uri -> uri.toString() })
+                    }
+
+                    val invalidFilesTypes: MutableList<String?> = mutableListOf()
+
+                    destinationFilesNames.indices.map { index ->
+                        val fileName = destinationFilesNames.elementAt(index)
+                        if (fileName == null || !validateFileExtension(fileName)) {
+                            invalidFilesTypes.add(
+                                getFileExtension(
+                                    destinationFilesNames.elementAt(
+                                        index
                                     )
                                 )
-                            }
+                            )
                         }
-                        finishWithError(
-                            "invalid_file_extension",
-                            "Invalid file type was picked",
-                            invalidFilesTypes.toString()
-                        )
                     }
+                    Log.d(LOG_TAG, "Invalid file type was picked $invalidFilesTypes")
+//                        finishWithError(
+//                            "invalid_file_extension",
+//                            "Invalid file type was picked",
+//                            invalidFilesTypes.toString()
+//                        )
+
                 } else {
                     Log.d(LOG_TAG, "Cancelled")
                     finishSuccessfully(null)
