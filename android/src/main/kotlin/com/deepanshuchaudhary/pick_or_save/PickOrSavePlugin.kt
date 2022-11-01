@@ -122,9 +122,8 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         when (call.method) {
             "pickFiles" -> pickOrSave!!.pickFile(
                 result,
-                fileExtensionsFilter = parseMethodCallArrayOfStringArgument(
-                    call,
-                    "fileExtensionsFilter"
+                allowedExtensions = parseMethodCallArrayOfStringArgument(
+                    call, "allowedExtensions"
                 ),
                 mimeTypeFilter = parseMethodCallArrayOfStringArgument(call, "mimeTypeFilter"),
                 localOnly = call.argument("localOnly") as Boolean? == true,
@@ -168,8 +167,7 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun parseMethodCallArrayOfStringArgument(
-        call: MethodCall,
-        arg: String
+        call: MethodCall, arg: String
     ): Array<String>? {
         if (call.hasArgument(arg)) {
             return call.argument<ArrayList<String>>(arg)?.toTypedArray()
@@ -178,8 +176,7 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun parseMethodCallArrayOfByteArgument(
-        call: MethodCall,
-        arg: String
+        call: MethodCall, arg: String
     ): Array<ByteArray>? {
         if (call.hasArgument(arg)) {
             return call.argument<ArrayList<ByteArray>>(arg)?.toTypedArray()

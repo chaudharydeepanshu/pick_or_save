@@ -1,3 +1,7 @@
+## 0.1.2
+
+* Fixed 'allowedExtensions' for files picking.
+
 ## 0.1.1
 
 * Added `cancelFilesSaving()` to cancel saving files.

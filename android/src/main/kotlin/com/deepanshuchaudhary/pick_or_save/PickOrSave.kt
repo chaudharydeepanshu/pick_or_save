@@ -44,7 +44,7 @@ class PickOrSave(
     private var job: Job? = null
 
     private var pendingResult: MethodChannel.Result? = null
-    private var fileExtensionsFilter: Array<String>? = null
+    private var allowedExtensions: Array<String>? = null
 
     // For deciding whether to copy picked files after picking. Defaults to true.
     private var copyPickedFileToCacheDir: Boolean = true
@@ -63,7 +63,7 @@ class PickOrSave(
     // For picking single file or multiple files.
     fun pickFile(
         result: MethodChannel.Result,
-        fileExtensionsFilter: Array<String>?,
+        allowedExtensions: Array<String>?,
         mimeTypeFilter: Array<String>?,
         localOnly: Boolean,
         copyFileToCacheDir: Boolean,
@@ -72,7 +72,7 @@ class PickOrSave(
         try {
             Log.d(
                 LOG_TAG,
-                "pickFile - IN, fileExtensionsFilter=$fileExtensionsFilter, mimeTypesFilter=$mimeTypeFilter, localOnly=$localOnly, copyFileToCacheDir=$copyFileToCacheDir, filePickingType=$filePickingType"
+                "pickFile - IN, allowedExtensions=$allowedExtensions, mimeTypesFilter=$mimeTypeFilter, localOnly=$localOnly, copyFileToCacheDir=$copyFileToCacheDir, filePickingType=$filePickingType"
             )
 
             if (!setPendingResult(result)) {
@@ -80,7 +80,7 @@ class PickOrSave(
                 return
             }
 
-            this.fileExtensionsFilter = fileExtensionsFilter
+            this.allowedExtensions = allowedExtensions
             this.copyPickedFileToCacheDir = copyFileToCacheDir
             this.filePickingType = filePickingType
 
@@ -102,15 +102,11 @@ class PickOrSave(
 
         } catch (e: Exception) {
             finishWithError(
-                "pickFile_exception",
-                e.stackTraceToString(),
-                null
+                "pickFile_exception", e.stackTraceToString(), null
             )
         } catch (e: Error) {
             finishWithError(
-                "pickFile_error",
-                e.stackTraceToString(),
-                null
+                "pickFile_error", e.stackTraceToString(), null
             )
         }
     }
@@ -127,9 +123,8 @@ class PickOrSave(
         try {
 
             Log.d(
-                LOG_TAG, "saveFile - IN, sourceFilesPaths=$sourceFilesPaths, " +
-                        "data=${data?.size} bytes, filesNames=$filesNames, " +
-                        "mimeTypesFilter=$mimeTypesFilter, localOnly=$localOnly"
+                LOG_TAG,
+                "saveFile - IN, sourceFilesPaths=$sourceFilesPaths, " + "data=${data?.size} bytes, filesNames=$filesNames, " + "mimeTypesFilter=$mimeTypesFilter, localOnly=$localOnly"
             )
 
             cancelFilesSaving()
@@ -164,9 +159,7 @@ class PickOrSave(
                     val isSourceFilesExists: Boolean = sourceFiles.all { file -> file.exists() }
                     if (!isSourceFilesExists) {
                         finishWithError(
-                            "file_not_found",
-                            "Source file is missing",
-                            sourceFilesPaths.toString()
+                            "file_not_found", "Source file is missing", sourceFilesPaths.toString()
                         )
                         return
                     }
@@ -197,9 +190,7 @@ class PickOrSave(
                     sourceFiles.add(File(sourceFilesPaths[0]))
                     if (!sourceFiles[0].exists()) {
                         finishWithError(
-                            "file_not_found",
-                            "Source file is missing",
-                            sourceFilesPaths[0]
+                            "file_not_found", "Source file is missing", sourceFilesPaths[0]
                         )
                         return
                     }
@@ -242,15 +233,11 @@ class PickOrSave(
 
         } catch (e: Exception) {
             finishWithError(
-                "saveFile_exception",
-                e.stackTraceToString(),
-                null
+                "saveFile_exception", e.stackTraceToString(), null
             )
         } catch (e: Error) {
             finishWithError(
-                "saveFile_error",
-                e.stackTraceToString(),
-                null
+                "saveFile_error", e.stackTraceToString(), null
             )
         }
     }
@@ -330,8 +317,7 @@ class PickOrSave(
                         lastModified = if (documentFile != null) {
                             if (documentFile.lastModified() != 0.toLong()) {
                                 SimpleDateFormat(
-                                    "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
-                                    Locale.ENGLISH
+                                    "yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ENGLISH
                                 ).format(
                                     Date(documentFile.lastModified())
                                 )
@@ -379,15 +365,11 @@ class PickOrSave(
 
         } catch (e: Exception) {
             finishWithError(
-                "pickFile_exception",
-                e.stackTraceToString(),
-                null
+                "pickFile_exception", e.stackTraceToString(), null
             )
         } catch (e: Error) {
             finishWithError(
-                "pickFile_error",
-                e.stackTraceToString(),
-                null
+                "pickFile_error", e.stackTraceToString(), null
             )
         }
     }
@@ -496,9 +478,7 @@ class PickOrSave(
                 if (resultCode == Activity.RESULT_OK && data?.data != null) {
                     val destinationDirectoryUri = data.data
                     saveMultipleFilesOnBackground(
-                        sourceFiles,
-                        sourceFilesNamesPrefixes,
-                        destinationDirectoryUri!!
+                        sourceFiles, sourceFilesNamesPrefixes, destinationDirectoryUri!!
                     )
                 } else {
                     Log.d(LOG_TAG, "Cancelled")
@@ -518,9 +498,7 @@ class PickOrSave(
     }
 
     private fun copyMultipleFilesToCacheDirOnBackground(
-        context: Context,
-        sourceFileUris: List<Uri>,
-        destinationFilesNames: List<String>
+        context: Context, sourceFileUris: List<Uri>, destinationFilesNames: List<String>
     ) {
         val uiScope = CoroutineScope(Dispatchers.Main)
         uiScope.launch {
@@ -546,9 +524,7 @@ class PickOrSave(
     }
 
     private fun copyFileToCacheDirOnBackground(
-        context: Context,
-        sourceFileUri: Uri,
-        destinationFileName: String
+        context: Context, sourceFileUri: Uri, destinationFileName: String
     ) {
         val uiScope = CoroutineScope(Dispatchers.Main)
         uiScope.launch {
@@ -569,9 +545,7 @@ class PickOrSave(
     }
 
     private fun copyFileToCacheDir(
-        context: Context,
-        sourceFileUri: Uri,
-        destinationFileName: String
+        context: Context, sourceFileUri: Uri, destinationFileName: String
     ): String {
         // Getting destination file on cache directory.
         val destinationFile = File(context.cacheDir.path, destinationFileName)
@@ -623,7 +597,7 @@ class PickOrSave(
     }
 
     private fun validateFileExtension(filePath: String): Boolean {
-        val validFileExtensions = fileExtensionsFilter
+        val validFileExtensions = allowedExtensions
         if (validFileExtensions == null || validFileExtensions.isEmpty()) {
             return true
         }
@@ -646,8 +620,7 @@ class PickOrSave(
             try {
                 Log.d(LOG_TAG, "Saving file on background...")
                 val outputFolder: DocumentFile? = DocumentFile.fromTreeUri(
-                    activity,
-                    destinationDirectoryUri
+                    activity, destinationDirectoryUri
                 )
                 val filesPaths: MutableList<String> = mutableListOf()
                 sourceFiles.indices.map { index ->
@@ -663,8 +636,7 @@ class PickOrSave(
                         sourceFilesNamesPrefixes.elementAt(index)
                     }
                     val documentFileNewFile = outputFolder!!.createFile(
-                        sourceFileMimeType ?: "application/random",
-                        sourceFileNamePrefix
+                        sourceFileMimeType ?: "application/random", sourceFileNamePrefix
                     )
                     val destinationFileUri: Uri = documentFileNewFile!!.uri
                     filesPaths.add(withContext(Dispatchers.IO) {
@@ -692,8 +664,7 @@ class PickOrSave(
     }
 
     private fun saveFileOnBackground(
-        sourceFile: File,
-        destinationFileUri: Uri
+        sourceFile: File, destinationFileUri: Uri
     ) {
         val uiScope = CoroutineScope(Dispatchers.Main)
         uiScope.launch {
@@ -720,8 +691,7 @@ class PickOrSave(
     }
 
     private fun saveFile(
-        sourceFile: File,
-        destinationFileUri: Uri
+        sourceFile: File, destinationFileUri: Uri
     ): String {
         Log.d(LOG_TAG, "Saving file '${sourceFile.path}' to '${destinationFileUri.path}'")
         sourceFile.inputStream().use { inputStream ->

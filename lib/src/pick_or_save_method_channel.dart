@@ -87,7 +87,9 @@ class FilePickerParams {
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
-      'allowedExtensions': allowedExtensions,
+      'allowedExtensions': allowedExtensions
+          ?.map((e) => e.toLowerCase().replaceAll(".", ""))
+          .toList(),
       'mimeTypeFilter': mimeTypeFilter,
       'localOnly': localOnly,
       'copyFileToCacheDir': copyFileToCacheDir,
