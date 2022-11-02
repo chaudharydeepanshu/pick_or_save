@@ -101,19 +101,45 @@ class FilePickerParams {
 /// File saving types for [fileSaver].
 enum FileSavingType { single, multiple }
 
+/// Parameters for the [fileMetaData] method.
+class SaveFileInfo {
+  /// Path of the file to save.
+  /// Provide either [filePath] or [fileData].
+  final String? filePath;
+
+  /// File data.
+  /// Provide either [filePath] or [fileData].
+  final Uint8List? fileData;
+
+  /// The file name to use when saving the file.
+  /// Required if [fileData] is provided.
+  final String? fileName;
+
+  /// Create parameters for the [fileMetaData] method.
+  const SaveFileInfo({
+    this.filePath,
+    this.fileData,
+    this.fileName,
+  })  : assert(filePath != null || fileData != null,
+            'provide anyone out of filePath or fileData'),
+        assert(filePath == null || fileData == null,
+            'provide only anyone out of filePath or fileData'),
+        assert(fileData != null ? fileName != null : true,
+            'provide file name when fileData was provided');
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'filePath': filePath,
+      'fileData': fileData,
+      'fileName': fileName,
+    };
+  }
+}
+
 /// Parameters for the [fileSaver] method.
 class FileSaverParams {
-  /// Path of the files to save.
-  /// Provide either [sourceFilesPaths] or [data] list.
-  final List<String>? sourceFilesPaths;
-
-  /// Files data.
-  /// Provide either [sourceFilesPaths] or [data] list.
-  final List<Uint8List>? data;
-
-  /// The suggested files names to use when saving the files.
-  /// Required if [data] is provided.
-  final List<String>? filesNames;
+  /// SaveFileInfo for files to save.
+  final List<SaveFileInfo>? saveFiles;
 
   /// Filter MIME types.
   /// File picker will be showing only provided MIME types.
@@ -126,25 +152,13 @@ class FileSaverParams {
 
   /// Create parameters for the [saveFile] method.
   const FileSaverParams(
-      {this.sourceFilesPaths,
-      this.data,
-      this.filesNames,
-      this.mimeTypeFilter,
-      this.localOnly = false})
-      : assert(
-            sourceFilesPaths != null && sourceFilesPaths.length != 0 ||
-                data != null && data.length != 0,
-            'provide anyone out of sourceFilesPaths or data with non null and non empty list'),
-        assert(sourceFilesPaths == null || data == null,
-            'sourceFilesPaths or data should be null'),
-        assert(data == null || (filesNames != null && filesNames.length != 0),
-            'Missing filesNames');
+      {this.saveFiles, this.mimeTypeFilter, this.localOnly = false})
+      : assert(saveFiles != null && saveFiles.length != 0,
+            'provide saveFiles with non null and non empty list');
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
-      'sourceFilesPaths': sourceFilesPaths,
-      'data': data,
-      'filesNames': filesNames,
+      'saveFiles': saveFiles?.map((e) => e.toJson()).toList(),
       'mimeTypeFilter': mimeTypeFilter,
       'localOnly': localOnly
     };

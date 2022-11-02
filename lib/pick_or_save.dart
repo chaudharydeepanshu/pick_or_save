@@ -5,6 +5,7 @@ export 'src/pick_or_save_method_channel.dart'
         FilePickingType,
         FilePickerParams,
         FileSavingType,
+        SaveFileInfo,
         FileSaverParams,
         FileMetadataParams,
         FileMetadata;

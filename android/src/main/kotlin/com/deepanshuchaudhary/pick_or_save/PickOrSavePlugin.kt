@@ -122,10 +122,11 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         when (call.method) {
             "pickFiles" -> pickOrSave!!.pickFile(
                 result,
-                allowedExtensions = parseMethodCallArrayOfStringArgument(
+                allowedExtensions = parseMethodCallListOfStringArgument(
                     call, "allowedExtensions"
-                ),
-                mimeTypeFilter = parseMethodCallArrayOfStringArgument(call, "mimeTypeFilter"),
+                ) ?: listOf(),
+                mimeTypeFilter = parseMethodCallListOfStringArgument(call, "mimeTypeFilter")
+                    ?: listOf(),
                 localOnly = call.argument("localOnly") as Boolean? == true,
                 copyFileToCacheDir = call.argument("copyFileToCacheDir") as Boolean? != false,
                 filePickingType = parseMethodCallFilePickingTypeArgument(call)
@@ -133,10 +134,9 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             )
             "saveFiles" -> pickOrSave!!.saveFile(
                 result,
-                sourceFilesPaths = parseMethodCallArrayOfStringArgument(call, "sourceFilesPaths"),
-                data = parseMethodCallArrayOfByteArgument(call, "data"),
-                filesNames = parseMethodCallArrayOfStringArgument(call, "filesNames"),
-                mimeTypesFilter = parseMethodCallArrayOfStringArgument(call, "mimeTypesFilter"),
+                saveFiles = parseMethodCallListOfSaveFileInfoArgument(call, "saveFiles"),
+                mimeTypesFilter = parseMethodCallListOfStringArgument(call, "mimeTypesFilter")
+                    ?: listOf(),
                 localOnly = call.argument("localOnly") as Boolean? == true,
             )
             "fileMetaData" -> pickOrSave!!.fileMetaData(
@@ -166,23 +166,23 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         return pickOrSave != null
     }
 
-    private fun parseMethodCallArrayOfStringArgument(
+    private fun parseMethodCallListOfStringArgument(
         call: MethodCall, arg: String
-    ): Array<String>? {
+    ): List<String>? {
         if (call.hasArgument(arg)) {
-            return call.argument<ArrayList<String>>(arg)?.toTypedArray()
+            return call.argument<ArrayList<String>>(arg)?.toList()
         }
         return null
     }
 
-    private fun parseMethodCallArrayOfByteArgument(
-        call: MethodCall, arg: String
-    ): Array<ByteArray>? {
-        if (call.hasArgument(arg)) {
-            return call.argument<ArrayList<ByteArray>>(arg)?.toTypedArray()
-        }
-        return null
-    }
+//    private fun parseMethodCallArrayOfByteArgument(
+//        call: MethodCall, arg: String
+//    ): Array<ByteArray>? {
+//        if (call.hasArgument(arg)) {
+//            return call.argument<ArrayList<ByteArray>>(arg)?.toTypedArray()
+//        }
+//        return null
+//    }
 
     private fun parseMethodCallFilePickingTypeArgument(call: MethodCall): FilePickingType? {
         val arg = "filePickingType"
@@ -195,4 +195,24 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         }
         return null
     }
+
+    private fun parseMethodCallListOfSaveFileInfoArgument(
+        call: MethodCall, arg: String
+    ): List<SaveFileInfo>? {
+        if (call.hasArgument(arg)) {
+            val saveFilesMapsList = call.argument<ArrayList<Map<String, Any>>>(arg)?.toList()
+            val saveFilesList: MutableList<SaveFileInfo> = mutableListOf()
+            saveFilesMapsList?.forEach { it ->
+                val saveFile = SaveFileInfo(
+                    filePath = it["filePath"] as String?,
+                    fileData = it["fileData"] as ByteArray?,
+                    fileName = it["fileName"] as String?
+                )
+                saveFilesList.add(saveFile)
+            }
+            return saveFilesList
+        }
+        return null
+    }
+
 }

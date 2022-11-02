@@ -1,6 +1,17 @@
+## 1.0.1
+
+* **Breaking:** Now `allowedExtensions` automatically combines with `mimeTypeFilter` by detecting mimeType from extensions.
+* **Breaking:** Use `saveFiles` as `sourceFilesPaths`, `data`, `filesNames` are removed (see updated documentation or example).
+
+  `saveFiles` takes list of `SaveFileInfo()` and `SaveFileInfo()` takes `filePath`, `fileData` and `fileName`.
+
+  This removes the limitation of only using either file path or file data for saving files as it can take many `SaveFileInfo()` objects created through file path or file data.
+
+* Project completely refactored.
+
 ## 0.1.3
 
-* Fixed 'allowedExtensions' for files picking.
+* Fixed `allowedExtensions` for files picking.
 
 ## 0.1.1
 

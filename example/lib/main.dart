@@ -44,6 +44,8 @@ class _MyAppState extends State<MyApp> {
       log(result.toString());
     } on PlatformException catch (e) {
       log(e.toString());
+    } catch (e) {
+      log(e.toString());
     }
     if (!mounted) return;
     setState(() {
@@ -62,6 +64,8 @@ class _MyAppState extends State<MyApp> {
       log(result.toString());
     } on PlatformException catch (e) {
       log(e.toString());
+    } catch (e) {
+      log(e.toString());
     }
     if (!mounted) return;
     setState(() {
@@ -79,6 +83,8 @@ class _MyAppState extends State<MyApp> {
       result = await _pickOrSavePlugin.fileMetaData(params: params);
       log(result.toString());
     } on PlatformException catch (e) {
+      log(e.toString());
+    } catch (e) {
       log(e.toString());
     }
     if (!mounted) return;
@@ -127,6 +133,18 @@ class _MyAppState extends State<MyApp> {
                             copyFileToCacheDir: _copyFileToCacheDir,
                             filePickingType: FilePickingType.multiple,
                             mimeTypeFilter: ["application/pdf"],
+                            allowedExtensions: [
+                              ".JPEG",
+                              ".JPG",
+                              ".JP2",
+                              ".GIF",
+                              ".PNG",
+                              ".BMP",
+                              ".WMF",
+                              ".TIFF",
+                              ".CCITT",
+                              ".JBIG2"
+                            ],
                           );
                           await _filePicker(params);
                         },
@@ -139,10 +157,15 @@ class _MyAppState extends State<MyApp> {
                               base64.decode(testBase64));
 
                           final params = FileSaverParams(
-                            localOnly: _localOnly,
-                            sourceFilesPaths: [tempFile.path],
-                            filesNames: ["single file.png"],
-                          );
+                              localOnly: _localOnly,
+                              saveFiles: [
+                                SaveFileInfo(
+                                    filePath: tempFile.path,
+                                    fileName: "single file.png")
+                              ],
+                              mimeTypeFilter: [
+                                "images/*"
+                              ]);
                           await _fileSaver(params);
                         },
                   child: const Text("Save single file from FILE")),
@@ -152,8 +175,11 @@ class _MyAppState extends State<MyApp> {
                       : () async {
                           final params = FileSaverParams(
                             localOnly: _localOnly,
-                            data: [base64.decode(testBase64)],
-                            filesNames: ["single file.png"],
+                            saveFiles: [
+                              SaveFileInfo(
+                                  fileData: base64.decode(testBase64),
+                                  fileName: "single file.png")
+                            ],
                           );
                           await _fileSaver(params);
                         },
@@ -163,13 +189,15 @@ class _MyAppState extends State<MyApp> {
                       ? null
                       : () async {
                           final params = FileSaverParams(
-                            localOnly: _localOnly,
-                            data: [
-                              base64.decode(testBase64),
-                              base64.decode(testBase64)
-                            ],
-                            filesNames: ["1st file.png", "2nd file.png"],
-                          );
+                              localOnly: _localOnly,
+                              saveFiles: [
+                                SaveFileInfo(
+                                    fileData: base64.decode(testBase64),
+                                    fileName: "1st file.png"),
+                                SaveFileInfo(
+                                    fileData: base64.decode(testBase64),
+                                    fileName: "2nd file.png")
+                              ]);
                           await _fileSaver(params);
                         },
                   child: const Text("Save multiple files from DATA")),
