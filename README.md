@@ -65,21 +65,49 @@ List<String>? filesPaths = await PickOrSave().filePicker(
 ```dart
 List<String>? result = await PickOrSave().fileSaver(
   params: FileSaverParams(
-    sourceFilesPaths: [filePath],
-    filesNames: ["file.png"],
-  ),
+    saveFiles: [
+      SaveFileInfo(
+          filePath: filePath,
+          fileName: "File.png")
+    ],
+  )
 );
 String savedFilePath = result[0];
 ```
 
 ### Saving multiple files
 
+#### Saving multiple files from File
+
 ```dart
-List<String>? savedFilesPaths = await PickOrSave().fileSaver(
+List<String>? result = await PickOrSave().fileSaver(
   params: FileSaverParams(
-    sourceFilesPaths: [file1Path, file2Path],
-    filesNames: ["file 1.png, file 2.png"],
-  ),
+    saveFiles: [
+      SaveFileInfo(
+          filePath: filePath,
+          fileName: "File 1.png"),
+      SaveFileInfo(
+          filePath: filePath,
+          fileName: "File 2.png")
+    ],
+  )
+);
+```
+
+#### Saving multiple files from Uint8List
+
+```dart
+List<String>? result = await PickOrSave().fileSaver(
+  params: FileSaverParams(
+    saveFiles: [
+      SaveFileInfo(
+          fileData: uint8List,
+          fileName: "File 1.png"),
+      SaveFileInfo(
+          fileData: uint8List,
+          fileName: "File 2.png")
+    ],
+  )
 );
 ```
 
