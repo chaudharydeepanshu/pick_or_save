@@ -7,6 +7,9 @@ import android.util.Log
 import android.webkit.MimeTypeMap
 import com.deepanshuchaudhary.pick_or_save.PickOrSavePlugin.Companion.LOG_TAG
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 private var validFileExtensions: List<String>? = null
 private var copyPickedFileToCacheDir: Boolean = true
@@ -132,137 +135,141 @@ fun processPickedFiles(
     resultCode: Int, data: Intent?, context: Activity
 ): Boolean {
 
-    val utils = Utils()
+    val uiScope = CoroutineScope(Dispatchers.Main)
+    uiScope.launch {
 
-    val begin = System.nanoTime()
+        val utils = Utils()
 
-    if (resultCode == Activity.RESULT_OK && data?.data != null) {
-        val sourceFileUri = data.data
-        Log.d(LOG_TAG, "Picked file: $sourceFileUri")
-        val destinationFileName = utils.getFileNameFromPickedDocumentUri(sourceFileUri, context)
-        if ((destinationFileName != null) && utils.validateFileExtension(
-                destinationFileName, validFileExtensions?.toTypedArray()
-            )
-        ) {
-            if (copyPickedFileToCacheDir) {
-                val cachedFilePath: String? = utils.copyFileToCacheDirOnBackground(
-                    context = context,
-                    sourceFileUri = sourceFileUri!!,
-                    destinationFileName = destinationFileName,
+        val begin = System.nanoTime()
+
+        if (resultCode == Activity.RESULT_OK && data?.data != null) {
+            val sourceFileUri = data.data
+            Log.d(LOG_TAG, "Picked file: $sourceFileUri")
+            val destinationFileName = utils.getFileNameFromPickedDocumentUri(sourceFileUri, context)
+            if ((destinationFileName != null) && utils.validateFileExtension(
+                    destinationFileName, validFileExtensions?.toTypedArray()
                 )
-                if (cachedFilePath != null) {
-                    utils.finishSuccessfully(
-                        listOf(cachedFilePath), filePickingResult
+            ) {
+                if (copyPickedFileToCacheDir) {
+                    val cachedFilePath: String? = utils.copyFileToCacheDirOnBackground(
+                        context = context,
+                        sourceFileUri = sourceFileUri!!,
+                        destinationFileName = destinationFileName,
                     )
+                    if (cachedFilePath != null) {
+                        utils.finishPickingSuccessfully(
+                            listOf(cachedFilePath), filePickingResult
+                        )
+                    } else {
+                        utils.finishWithError(
+                            "file_caching_failed",
+                            "cached file path was null",
+                            "cached file path was null",
+                            filePickingResult
+                        )
+                    }
                 } else {
-                    utils.finishWithError(
-                        "file_caching_failed",
-                        "cached file path was null",
-                        "cached file path was null",
-                        filePickingResult
+                    utils.finishPickingSuccessfully(
+                        listOf(sourceFileUri!!.toString()), filePickingResult
                     )
                 }
             } else {
-                utils.finishSuccessfully(
-                    listOf(sourceFileUri!!.toString()), filePickingResult
-                )
-            }
-        } else {
-            utils.finishWithError(
-                "invalid_file_extension",
-                "Invalid file type was picked",
-                utils.getFileExtension(destinationFileName),
-                filePickingResult
-            )
-        }
-    } else if (resultCode == Activity.RESULT_OK && data?.clipData != null) {
-        val sourceFileUris = 0.until(data.clipData!!.itemCount).map { index ->
-            data.clipData!!.getItemAt(index).uri
-        }
-        Log.d(LOG_TAG, "Picked files: $sourceFileUris")
-        val invalidFilesUris = mutableListOf<Uri>()
-        val validFilesUris = mutableListOf<Uri>()
-        val destinationFilesNames = sourceFileUris.indices.map { index ->
-
-            val destinationFileName =
-                utils.getFileNameFromPickedDocumentUri(sourceFileUris.elementAt(index), context)
-
-            val isFileTypeValid = destinationFileName != null && utils.validateFileExtension(
-                destinationFileName, validFileExtensions?.toTypedArray()
-            )
-
-            if (isFileTypeValid) {
-                validFilesUris.add(sourceFileUris.elementAt(index))
-            } else {
-                invalidFilesUris.add(sourceFileUris.elementAt(index))
-            }
-
-            destinationFileName
-
-        }
-
-        if (copyPickedFileToCacheDir) {
-
-            val cachedFilesPaths: List<String>? = utils.copyMultipleFilesToCacheDirOnBackground(
-                context = context,
-                sourceFileUris = validFilesUris,
-                destinationFilesNames = validFilesUris.indices.mapNotNull { index ->
-                    utils.getFileNameFromPickedDocumentUri(
-                        validFilesUris.elementAt(index), context
-                    )
-                },
-            )
-            if (cachedFilesPaths != null) {
-                utils.finishSuccessfully(
-                    cachedFilesPaths, filePickingResult
-                )
-            } else {
                 utils.finishWithError(
-                    "files_caching_failed",
-                    "cached files paths list was null",
-                    "cached files paths list was null",
+                    "invalid_file_extension",
+                    "Invalid file type was picked",
+                    utils.getFileExtension(destinationFileName),
                     filePickingResult
                 )
             }
+        } else if (resultCode == Activity.RESULT_OK && data?.clipData != null) {
+            val sourceFileUris = 0.until(data.clipData!!.itemCount).map { index ->
+                data.clipData!!.getItemAt(index).uri
+            }
+            Log.d(LOG_TAG, "Picked files: $sourceFileUris")
+            val invalidFilesUris = mutableListOf<Uri>()
+            val validFilesUris = mutableListOf<Uri>()
+            val destinationFilesNames = sourceFileUris.indices.map { index ->
 
+                val destinationFileName =
+                    utils.getFileNameFromPickedDocumentUri(sourceFileUris.elementAt(index), context)
 
-        } else {
-            utils.finishSuccessfully(
-                validFilesUris.map { uri -> uri.toString() }, filePickingResult
-            )
-        }
-
-        val invalidFilesTypes: MutableList<String?> = mutableListOf()
-
-        destinationFilesNames.indices.map { index ->
-            val fileName = destinationFilesNames.elementAt(index)
-            if (fileName == null || !utils.validateFileExtension(
-                    fileName, validFileExtensions?.toTypedArray()
+                val isFileTypeValid = destinationFileName != null && utils.validateFileExtension(
+                    destinationFileName, validFileExtensions?.toTypedArray()
                 )
-            ) {
-                invalidFilesTypes.add(
-                    utils.getFileExtension(
-                        destinationFilesNames.elementAt(
-                            index
+
+                if (isFileTypeValid) {
+                    validFilesUris.add(sourceFileUris.elementAt(index))
+                } else {
+                    invalidFilesUris.add(sourceFileUris.elementAt(index))
+                }
+
+                destinationFileName
+
+            }
+
+            if (copyPickedFileToCacheDir) {
+
+                val cachedFilesPaths: List<String>? = utils.copyMultipleFilesToCacheDirOnBackground(
+                    context = context,
+                    sourceFileUris = validFilesUris,
+                    destinationFilesNames = validFilesUris.indices.mapNotNull { index ->
+                        utils.getFileNameFromPickedDocumentUri(
+                            validFilesUris.elementAt(index), context
                         )
+                    },
+                )
+                if (cachedFilesPaths != null) {
+                    utils.finishPickingSuccessfully(
+                        cachedFilesPaths, filePickingResult
                     )
+                } else {
+                    utils.finishWithError(
+                        "files_caching_failed",
+                        "cached files paths list was null",
+                        "cached files paths list was null",
+                        filePickingResult
+                    )
+                }
+
+
+            } else {
+                utils.finishPickingSuccessfully(
+                    validFilesUris.map { uri -> uri.toString() }, filePickingResult
                 )
             }
-        }
-        Log.d(LOG_TAG, "Invalid file type was picked $invalidFilesTypes")
+
+            val invalidFilesTypes: MutableList<String?> = mutableListOf()
+
+            destinationFilesNames.indices.map { index ->
+                val fileName = destinationFilesNames.elementAt(index)
+                if (fileName == null || !utils.validateFileExtension(
+                        fileName, validFileExtensions?.toTypedArray()
+                    )
+                ) {
+                    invalidFilesTypes.add(
+                        utils.getFileExtension(
+                            destinationFilesNames.elementAt(
+                                index
+                            )
+                        )
+                    )
+                }
+            }
+            Log.d(LOG_TAG, "Invalid file type was picked $invalidFilesTypes")
 //                        finishWithError(
 //                            "invalid_file_extension",
 //                            "Invalid file type was picked",
 //                            invalidFilesTypes.toString()
 //                        )
 
-    } else {
-        Log.d(LOG_TAG, "Cancelled")
-        utils.finishSuccessfully(null, filePickingResult)
+        } else {
+            Log.d(LOG_TAG, "Cancelled")
+            utils.finishPickingSuccessfully(null, filePickingResult)
+        }
+
+        val end = System.nanoTime()
+        println("Elapsed time in nanoseconds: ${end - begin}")
+
     }
-
-    val end = System.nanoTime()
-    println("Elapsed time in nanoseconds: ${end - begin}")
-
     return true
 }

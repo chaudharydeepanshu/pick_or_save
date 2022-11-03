@@ -5,6 +5,9 @@ import android.content.Intent
 import android.util.Log
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 //https://developer.android.com/training/data-storage/shared/documents-files#open-file
 
@@ -162,34 +165,41 @@ class PickOrSave(
         }
     }
 
-//    // For getting cached file path from file Uri.
-//    fun cachedFileFromUri(
-//        result: MethodChannel.Result,
-//        sourceFileUri: String?,
-//    ) {
-//
-//        try {
-//
-//            Log.d(
-//                LOG_TAG, "cachedFileFromUri - IN, sourceFileUri=$sourceFileUri"
-//            )
-//
-//            val contentResolver = activity.contentResolver
-//
-//            val fileMetaData: MutableList<String> = mutableListOf()
-//
-//            Log.d(LOG_TAG, "fileMetaData - OUT")
-//
-//        } catch (e: Exception) {
-//            utils.finishWithError(
-//                "pickFile_exception", e.stackTraceToString(), null, result
-//            )
-//        } catch (e: Error) {
-//            utils.finishWithError(
-//                "pickFile_error", e.stackTraceToString(), null, result
-//            )
-//        }
-//    }
+    // For getting cached file path from file Uri.
+    fun cacheFilePathFromUri(
+        resultCallback: MethodChannel.Result,
+        sourceFileUri: String?,
+    ) {
+        val uiScope = CoroutineScope(Dispatchers.Main)
+        uiScope.launch {
+
+            try {
+
+                Log.d(
+                    LOG_TAG, "cacheFileFromUri - IN, sourceFileUri=$sourceFileUri"
+                )
+
+                val result = cacheFilePathFromUri(
+                    sourceFileUri = sourceFileUri!!, context = activity
+                )
+
+                utils.finishSuccessfullyWithString(result, resultCallback)
+
+                Log.d(LOG_TAG, "cacheFileFromUri - OUT")
+
+
+            } catch (e: Exception) {
+                utils.finishWithError(
+                    "cacheFileFromUri_exception", e.stackTraceToString(), null, resultCallback
+                )
+            } catch (e: Error) {
+                utils.finishWithError(
+                    "cacheFileFromUri_error", e.stackTraceToString(), null, resultCallback
+                )
+            }
+
+        }
+    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
 

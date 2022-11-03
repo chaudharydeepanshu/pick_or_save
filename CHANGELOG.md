@@ -1,3 +1,8 @@
+## 1.0.2
+
+* Fixed `copyFileToCacheDir` and few other things not working due to the updates made in version 1.0.1.
+* Added `cacheFilePathFromUri` to create a cache file from uri and get the cached file path.
+
 ## 1.0.1
 
 * **Breaking:** Now `allowedExtensions` automatically combines with `mimeTypeFilter` by detecting mimeType from extensions.

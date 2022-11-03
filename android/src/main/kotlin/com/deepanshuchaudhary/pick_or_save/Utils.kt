@@ -67,14 +67,14 @@ class Utils {
         return fileName?.substringAfterLast('.', "") ?: ""
     }
 
-    fun copyFileToCacheDirOnBackground(
+    suspend fun copyFileToCacheDirOnBackground(
         context: Context,
         sourceFileUri: Uri,
         destinationFileName: String,
     ): String? {
         var cachedFilePath: String? = null
         val uiScope = CoroutineScope(Dispatchers.Main)
-        uiScope.launch {
+        withContext(uiScope.coroutineContext) {
             try {
                 Log.d(LOG_TAG, "Launch...")
                 Log.d(LOG_TAG, "Copy on background...")
@@ -94,14 +94,14 @@ class Utils {
         return cachedFilePath
     }
 
-    fun copyMultipleFilesToCacheDirOnBackground(
+    suspend fun copyMultipleFilesToCacheDirOnBackground(
         context: Context,
         sourceFileUris: List<Uri>,
         destinationFilesNames: List<String>,
     ): List<String>? {
         var cachedFilesPaths: List<String>? = null
         val uiScope = CoroutineScope(Dispatchers.Main)
-        uiScope.launch {
+        withContext(uiScope.coroutineContext) {
             try {
                 Log.d(LOG_TAG, "Launch...")
                 Log.d(LOG_TAG, "Copy on background...")
@@ -156,7 +156,7 @@ class Utils {
     }
 
 
-    fun saveFileOnBackground(
+    suspend fun saveFileOnBackground(
         destinationSaveFileInfo: DestinationSaveFileInfo,
         destinationFileUri: Uri,
         resultCallback: MethodChannel.Result?,
@@ -164,7 +164,7 @@ class Utils {
     ): String? {
         var savedFilePath: String? = null
         val uiScope = CoroutineScope(Dispatchers.Main)
-        uiScope.launch {
+        withContext(uiScope.coroutineContext) {
             val saveFile: File = destinationSaveFileInfo.file
             val isTempFile: Boolean = destinationSaveFileInfo.isTempFile
             try {
@@ -201,7 +201,8 @@ class Utils {
         context: Context,
     ): List<String> {
         val savedFilesPaths: MutableList<String> = mutableListOf()
-        withContext(Dispatchers.IO) {
+        val uiScope = CoroutineScope(Dispatchers.Main)
+        withContext(uiScope.coroutineContext) {
             try {
                 Log.d(LOG_TAG, "Saving file on background...")
                 val outputFolder: DocumentFile? = DocumentFile.fromTreeUri(
@@ -273,13 +274,29 @@ class Utils {
         fileSavingResult = null
     }
 
+    fun finishPickingSuccessfully(result: List<String>?, resultCallback: MethodChannel.Result?) {
+        resultCallback?.success(result)
+        clearPendingResult()
+    }
+
+    fun finishSavingSuccessfully(result: List<String>?, resultCallback: MethodChannel.Result?) {
+        resultCallback?.success(result)
+        clearPendingResult()
+    }
+
     fun finishWithAlreadyActiveError(result: MethodChannel.Result) {
         result.error("already_active", "File dialog is already active", null)
     }
 
-    fun finishSuccessfully(result: List<String>?, resultCallback: MethodChannel.Result?) {
+    fun finishSuccessfullyWithListOfString(
+        result: List<String>?,
+        resultCallback: MethodChannel.Result?
+    ) {
         resultCallback?.success(result)
-        clearPendingResult()
+    }
+
+    fun finishSuccessfullyWithString(result: String?, resultCallback: MethodChannel.Result?) {
+        resultCallback?.success(result)
     }
 
     fun finishWithError(
@@ -290,6 +307,14 @@ class Utils {
     ) {
         resultCallback?.error(errorCode, errorMessage, errorDetails)
         clearPendingResult()
+    }
+
+    fun getURI(uri: String): Uri {
+        val parsed: Uri = Uri.parse(uri)
+        val parsedScheme: String? = parsed.scheme
+        return if ((parsedScheme == null) || parsedScheme.isEmpty()) {
+            Uri.fromFile(File(uri))
+        } else parsed
     }
 
 }

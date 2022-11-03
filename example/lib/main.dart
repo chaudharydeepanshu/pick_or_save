@@ -93,6 +93,25 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  Future<void> _cacheFilePathFromUri(CacheFilePathFromUriParams params) async {
+    String? result;
+    try {
+      setState(() {
+        _isBusy = true;
+      });
+      result = await _pickOrSavePlugin.cacheFilePathFromUri(params: params);
+      log(result.toString());
+    } on PlatformException catch (e) {
+      log(e.toString());
+    } catch (e) {
+      log(e.toString());
+    }
+    if (!mounted) return;
+    setState(() {
+      _isBusy = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -124,6 +143,16 @@ class _MyAppState extends State<MyApp> {
                           await _fileMetadata(params);
                         },
                   child: const Text("Get file metadata")),
+              OutlinedButton(
+                  onPressed: _isBusy
+                      ? null
+                      : () async {
+                          final params = CacheFilePathFromUriParams(
+                            fileUri: _pickedFilePath![0],
+                          );
+                          await _cacheFilePathFromUri(params);
+                        },
+                  child: const Text("Cache file from Uri")),
               OutlinedButton(
                   onPressed: _isBusy
                       ? null

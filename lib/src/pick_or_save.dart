@@ -28,6 +28,14 @@ class PickOrSave {
     return PickOrSavePlatform.instance.fileMetaData(params: params);
   }
 
+  /// Get the cached file path from uri.
+  ///
+  /// Returns cached file path.
+  /// Throws exception on error.
+  Future<String?> cacheFilePathFromUri({CacheFilePathFromUriParams? params}) {
+    return PickOrSavePlatform.instance.cacheFilePathFromUri(params: params);
+  }
+
   /// Cancels running file saves.
   ///
   /// Returns the cancelling message.

@@ -234,59 +234,64 @@ fun processSingleSaveFile(
     resultCode: Int, data: Intent?, context: Activity
 ): Boolean {
 
-    val utils = Utils()
+    val uiScope = CoroutineScope(Dispatchers.Main)
+    uiScope.launch {
 
-    val begin = System.nanoTime()
+        val utils = Utils()
 
-    if (resultCode == Activity.RESULT_OK && data?.data != null) {
-        val destinationFileUri = data.data
-        if (destinationSaveFileInfo != null) {
+        val begin = System.nanoTime()
 
-            val savedFilePath: String? = utils.saveFileOnBackground(
-                destinationSaveFileInfo!!, destinationFileUri!!, fileSavingResult, context
-            )
+        if (resultCode == Activity.RESULT_OK && data?.data != null) {
+            val destinationFileUri = data.data
+            if (destinationSaveFileInfo != null) {
 
-            if (savedFilePath != null) {
-                utils.finishSuccessfully(
-                    listOf(savedFilePath), fileSavingResult
+                val savedFilePath: String? = utils.saveFileOnBackground(
+                    destinationSaveFileInfo!!, destinationFileUri!!, fileSavingResult, context
                 )
+
+                if (savedFilePath != null) {
+                    utils.finishSavingSuccessfully(
+                        listOf(savedFilePath), fileSavingResult
+                    )
+                } else {
+                    utils.finishWithError(
+                        "file_saving_failed",
+                        "saved file path was null",
+                        "saved file path was null",
+                        fileSavingResult
+                    )
+                }
+
             } else {
                 utils.finishWithError(
-                    "file_saving_failed",
-                    "saved file path was null",
-                    "saved file path was null",
+                    "destinationSaveFileInfo_not_found",
+                    "destinationSaveFileInfo is null",
+                    "destinationSaveFileInfo is null",
                     fileSavingResult
                 )
             }
-
         } else {
-            utils.finishWithError(
-                "destinationSaveFileInfo_not_found",
-                "destinationSaveFileInfo is null",
-                "destinationSaveFileInfo is null",
-                fileSavingResult
-            )
-        }
-    } else {
-        if (destinationSaveFileInfo != null) {
-            Log.d(LOG_TAG, "Cancelled")
-            if (destinationSaveFileInfo!!.isTempFile) {
-                Log.d(LOG_TAG, "Deleting source file: ${destinationSaveFileInfo!!.file.path}")
-                destinationSaveFileInfo!!.file.delete()
+            if (destinationSaveFileInfo != null) {
+                Log.d(LOG_TAG, "Cancelled")
+                if (destinationSaveFileInfo!!.isTempFile) {
+                    Log.d(LOG_TAG, "Deleting source file: ${destinationSaveFileInfo!!.file.path}")
+                    destinationSaveFileInfo!!.file.delete()
+                }
+                utils.finishSavingSuccessfully(null, fileSavingResult)
+            } else {
+                utils.finishWithError(
+                    "destinationSaveFileInfo_not_found",
+                    "destinationSaveFileInfo is null",
+                    "destinationSaveFileInfo is null",
+                    fileSavingResult
+                )
             }
-            utils.finishSuccessfully(null, fileSavingResult)
-        } else {
-            utils.finishWithError(
-                "destinationSaveFileInfo_not_found",
-                "destinationSaveFileInfo is null",
-                "destinationSaveFileInfo is null",
-                fileSavingResult
-            )
         }
-    }
 
-    val end = System.nanoTime()
-    println("Elapsed time in nanoseconds: ${end - begin}")
+        val end = System.nanoTime()
+        println("Elapsed time in nanoseconds: ${end - begin}")
+
+    }
 
     return true
 }
@@ -296,67 +301,75 @@ fun processMultipleSaveFile(
     resultCode: Int, data: Intent?, context: Activity
 ): Boolean {
 
-    val utils = Utils()
+    val uiScope = CoroutineScope(Dispatchers.Main)
+    uiScope.launch {
 
-    val begin = System.nanoTime()
+        val utils = Utils()
 
-    if (resultCode == Activity.RESULT_OK && data?.data != null) {
-        val destinationDirectoryUri = data.data
-        if (destinationSaveFilesInfo.isNotEmpty()) {
+        val begin = System.nanoTime()
 
-            val uiScope = CoroutineScope(Dispatchers.Main)
-            fileSaveJob = uiScope.launch {
+        if (resultCode == Activity.RESULT_OK && data?.data != null) {
+            val destinationDirectoryUri = data.data
+            if (destinationSaveFilesInfo.isNotEmpty()) {
 
-                val savedFilesPaths: List<String> = utils.saveMultipleFilesOnBackground(
-                    destinationSaveFilesInfo, destinationDirectoryUri!!, fileSavingResult, context
+                val uiScope = CoroutineScope(Dispatchers.Main)
+                fileSaveJob = uiScope.launch {
+
+                    val savedFilesPaths: List<String> = utils.saveMultipleFilesOnBackground(
+                        destinationSaveFilesInfo,
+                        destinationDirectoryUri!!,
+                        fileSavingResult,
+                        context
+                    )
+
+                    if (savedFilesPaths.isNotEmpty()) {
+                        utils.finishSavingSuccessfully(
+                            savedFilesPaths, fileSavingResult
+                        )
+                    } else {
+                        utils.finishWithError(
+                            "files_saving_failed",
+                            "saved files paths list was empty",
+                            "saved files paths list was empty",
+                            fileSavingResult
+                        )
+                    }
+                }
+
+            } else {
+                utils.finishWithError(
+                    "destinationSaveFilesInfo_not_found",
+                    "destinationSaveFilesInfo is empty",
+                    "destinationSaveFilesInfo is empty",
+                    fileSavingResult
                 )
-
-                if (savedFilesPaths.isNotEmpty()) {
-                    utils.finishSuccessfully(
-                        savedFilesPaths, fileSavingResult
-                    )
-                } else {
-                    utils.finishWithError(
-                        "files_saving_failed",
-                        "saved files paths list was empty",
-                        "saved files paths list was empty",
-                        fileSavingResult
-                    )
-                }
             }
 
         } else {
-            utils.finishWithError(
-                "destinationSaveFilesInfo_not_found",
-                "destinationSaveFilesInfo is empty",
-                "destinationSaveFilesInfo is empty",
-                fileSavingResult
-            )
+            if (destinationSaveFilesInfo.isNotEmpty()) {
+                Log.d(LOG_TAG, "Cancelled")
+                0.until(destinationSaveFilesInfo.size).map { index ->
+                    if (destinationSaveFilesInfo.elementAt(index).isTempFile) {
+                        val saveFile = destinationSaveFilesInfo.elementAt(index).file
+                        Log.d(LOG_TAG, "Deleting temp source file: ${saveFile.path}")
+                        saveFile.delete()
+                    }
+                }
+                utils.finishSavingSuccessfully(null, fileSavingResult)
+            } else {
+                utils.finishWithError(
+                    "destinationSaveFilesInfo_not_found",
+                    "destinationSaveFilesInfo is empty",
+                    "destinationSaveFilesInfo is empty",
+                    fileSavingResult
+                )
+            }
         }
 
-    } else {
-        if (destinationSaveFilesInfo.isNotEmpty()) {
-            Log.d(LOG_TAG, "Cancelled")
-            0.until(destinationSaveFilesInfo.size).map { index ->
-                if (destinationSaveFilesInfo.elementAt(index).isTempFile) {
-                    val saveFile = destinationSaveFilesInfo.elementAt(index).file
-                    Log.d(LOG_TAG, "Deleting temp source file: ${saveFile.path}")
-                    saveFile.delete()
-                }
-            }
-            utils.finishSuccessfully(null, fileSavingResult)
-        } else {
-            utils.finishWithError(
-                "destinationSaveFilesInfo_not_found",
-                "destinationSaveFilesInfo is empty",
-                "destinationSaveFilesInfo is empty",
-                fileSavingResult
-            )
-        }
+        val end = System.nanoTime()
+        println("Elapsed time in nanoseconds: ${end - begin}")
+
     }
-
-    val end = System.nanoTime()
-    println("Elapsed time in nanoseconds: ${end - begin}")
 
     return true
 }

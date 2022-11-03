@@ -144,6 +144,10 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 sourceFileUri = call.argument("sourceFileUri"),
                 sourceFilePath = call.argument("sourceFilePath")
             )
+            "cacheFilePathFromUri" -> pickOrSave!!.cacheFilePathFromUri(
+                result,
+                sourceFileUri = call.argument("fileUri"),
+            )
             "cancelFilesSaving" -> pickOrSave!!.cancelFilesSaving()
             else -> result.notImplemented()
         }

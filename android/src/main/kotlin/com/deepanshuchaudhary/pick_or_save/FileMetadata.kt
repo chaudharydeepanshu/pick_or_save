@@ -93,9 +93,9 @@ fun fileMetadata(
         }
 
         if (fileMetaData.size != 3) {
-            utils.finishSuccessfully(null, resultCallback)
+            utils.finishSuccessfullyWithListOfString(null, resultCallback)
         } else {
-            utils.finishSuccessfully(fileMetaData, resultCallback)
+            utils.finishSuccessfullyWithListOfString(fileMetaData, resultCallback)
         }
     } else {
         fileMetaData.clear()
@@ -108,10 +108,10 @@ fun fileMetadata(
                     Date(f.lastModified())
                 )
             )
-            utils.finishSuccessfully(fileMetaData, resultCallback)
+            utils.finishSuccessfullyWithListOfString(fileMetaData, resultCallback)
         } else {
             println("The File does not exist")
-            utils.finishSuccessfully(null, resultCallback)
+            utils.finishSuccessfullyWithListOfString(null, resultCallback)
         }
     }
 }

@@ -39,6 +39,14 @@ class MethodChannelPickOrSave extends PickOrSavePlatform {
   }
 
   @override
+  Future<String?> cacheFilePathFromUri(
+      {CacheFilePathFromUriParams? params}) async {
+    final String? result = await methodChannel.invokeMethod<String?>(
+        'cacheFilePathFromUri', params?.toJson());
+    return result;
+  }
+
+  @override
   Future<String?> cancelFilesSaving() async {
     final String? result =
         await methodChannel.invokeMethod<String?>('cancelFilesSaving');
@@ -206,5 +214,29 @@ class FileMetadata {
   @override
   String toString() {
     return 'FileMetadata{displayName: $displayName, size: $size, lastModified: $lastModified}';
+  }
+}
+
+/// Parameters for the [cacheFilePathFromUri] method.
+class CacheFilePathFromUriParams {
+  /// URI of the file.
+  final String fileUri;
+
+  /// Create parameters for the [cacheFilePathFromUri] method.
+  const CacheFilePathFromUriParams({
+    required this.fileUri,
+  });
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'fileUri': fileUri,
+    };
+  }
+
+  // Implement toString to make it easier to see information
+  // when using the print statement.
+  @override
+  String toString() {
+    return 'CacheFilePathFromUriParams{fileUri: $fileUri}';
   }
 }
