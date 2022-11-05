@@ -161,7 +161,7 @@ class _MyAppState extends State<MyApp> {
                             localOnly: _localOnly,
                             copyFileToCacheDir: _copyFileToCacheDir,
                             filePickingType: FilePickingType.multiple,
-                            mimeTypeFilter: ["application/pdf"],
+                            mimeTypesFilter: ["application/pdf"],
                             allowedExtensions: [
                               ".JPEG",
                               ".JPG",
@@ -192,7 +192,7 @@ class _MyAppState extends State<MyApp> {
                                     filePath: tempFile.path,
                                     fileName: "single file.png")
                               ],
-                              mimeTypeFilter: [
+                              mimeTypesFilter: [
                                 "images/*"
                               ]);
                           await _fileSaver(params);
@@ -213,6 +213,26 @@ class _MyAppState extends State<MyApp> {
                           await _fileSaver(params);
                         },
                   child: const Text("Save single file from DATA")),
+              OutlinedButton(
+                  onPressed: _isBusy
+                      ? null
+                      : () async {
+                          File tempFile = await getTempFileFromData(
+                              base64.decode(testBase64));
+
+                          final params = FileSaverParams(
+                              localOnly: _localOnly,
+                              saveFiles: [
+                                SaveFileInfo(
+                                    filePath: tempFile.path,
+                                    fileName: "1st file.png"),
+                                SaveFileInfo(
+                                    filePath: tempFile.path,
+                                    fileName: "2nd file.png")
+                              ]);
+                          await _fileSaver(params);
+                        },
+                  child: const Text("Save multiple files from Files")),
               OutlinedButton(
                   onPressed: _isBusy
                       ? null

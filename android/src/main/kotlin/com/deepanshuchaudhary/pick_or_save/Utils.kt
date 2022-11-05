@@ -26,7 +26,7 @@ class Utils {
     val REQUEST_CODE_SAVE_MULTIPLE_FILES = 3
 
     fun applyMimeTypesFilterToIntent(mimeTypesFilter: List<String>?, intent: Intent) {
-        if (mimeTypesFilter != null) {
+        if ((mimeTypesFilter != null) && mimeTypesFilter.isNotEmpty()) {
             intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypesFilter.toTypedArray())
         }
     }
@@ -71,6 +71,7 @@ class Utils {
         context: Context,
         sourceFileUri: Uri,
         destinationFileName: String,
+        resultCallback: MethodChannel.Result?,
     ): String? {
         var cachedFilePath: String? = null
         val uiScope = CoroutineScope(Dispatchers.Main)
@@ -87,7 +88,7 @@ class Utils {
             } catch (e: Exception) {
                 Log.e(LOG_TAG, "copyFileToCacheDirOnBackground failed", e)
                 finishWithError(
-                    "file_copy_failed", e.localizedMessage, e.toString(), filePickingResult
+                    "file_copy_failed", e.localizedMessage, e.toString(), resultCallback
                 )
             }
         }
@@ -98,6 +99,7 @@ class Utils {
         context: Context,
         sourceFileUris: List<Uri>,
         destinationFilesNames: List<String>,
+        resultCallback: MethodChannel.Result?,
     ): List<String>? {
         var cachedFilesPaths: List<String>? = null
         val uiScope = CoroutineScope(Dispatchers.Main)
@@ -119,7 +121,7 @@ class Utils {
             } catch (e: Exception) {
                 Log.e(LOG_TAG, "copyFileToCacheDirOnBackground failed", e)
                 finishWithError(
-                    "file_copy_failed", e.localizedMessage, e.toString(), filePickingResult
+                    "file_copy_failed", e.localizedMessage, e.toString(), resultCallback
                 )
             }
         }
@@ -127,7 +129,7 @@ class Utils {
     }
 
     private fun copyFileToCacheDir(
-        context: Context, sourceFileUri: Uri, destinationFileName: String
+        context: Context, sourceFileUri: Uri, destinationFileName: String,
     ): String {
         // Getting destination file on cache directory.
         val destinationFile = File(context.cacheDir.path, destinationFileName)
@@ -208,7 +210,6 @@ class Utils {
                 val outputFolder: DocumentFile? = DocumentFile.fromTreeUri(
                     context, destinationDirectoryUri
                 )
-                val filesPaths: MutableList<String> = mutableListOf()
                 destinationSaveFilesInfo.indices.map { index ->
                     yield()
                     val saveFile = destinationSaveFilesInfo.elementAt(index).file
@@ -220,11 +221,11 @@ class Utils {
                         sourceFileMimeType ?: "application/random", saveFileNamePrefix
                     )
                     val destinationFileUri: Uri = documentFileNewFile!!.uri
-                    filesPaths.add(withContext(Dispatchers.IO) {
+                    savedFilesPaths.add(withContext(Dispatchers.IO) {
                         saveFile(saveFile, destinationFileUri, context)
                     })
                 }
-                Log.d(LOG_TAG, "...saved file on background, result: $filesPaths")
+                Log.d(LOG_TAG, "...saved file on background, result: $savedFilesPaths")
             } catch (e: SecurityException) {
                 Log.e(LOG_TAG, "saveFileOnBackground", e)
                 finishWithError(
@@ -289,8 +290,7 @@ class Utils {
     }
 
     fun finishSuccessfullyWithListOfString(
-        result: List<String>?,
-        resultCallback: MethodChannel.Result?
+        result: List<String>?, resultCallback: MethodChannel.Result?
     ) {
         resultCallback?.success(result)
     }

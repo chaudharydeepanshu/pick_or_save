@@ -1,3 +1,11 @@
+## 1.0.3
+
+* **Breaking:** `mimeTypeFilter` is replaced with `mimeTypesFilter` everywhere.
+* Fixed `localOnly` for `fileSaver` and `filePicker` not working as intended.
+* Fixed `fileSaver` only opening download folder for when saving single file due to the updates made in version 1.0.1.
+* Fixed `mimeTypesFilter` not working for `fileSaver`.
+* Fixed `fileSaver` giving error instead of file paths when saving multiple files even after saving files successfully due to the updates made in version 1.0.1.
+
 ## 1.0.2
 
 * Fixed `copyFileToCacheDir` and few other things not working due to the updates made in version 1.0.1.

@@ -117,7 +117,6 @@ fun saveSingleFile(
     }
 
     val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-    intent.addCategory(Intent.CATEGORY_OPENABLE)
     intent.putExtra(Intent.EXTRA_TITLE, saveFileNamePrefix)
     if (localOnly) {
         intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)

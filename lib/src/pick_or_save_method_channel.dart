@@ -66,7 +66,7 @@ class FilePickerParams {
 
   /// Filter MIME types.
   /// File picker will be showing only provided MIME types.
-  final List<String>? mimeTypeFilter;
+  final List<String>? mimeTypesFilter;
 
   /// Show only device local files.
   ///
@@ -88,7 +88,7 @@ class FilePickerParams {
   /// Create parameters for the [filePicker] method.
   const FilePickerParams(
       {this.allowedExtensions,
-      this.mimeTypeFilter,
+      this.mimeTypesFilter,
       this.localOnly = false,
       this.copyFileToCacheDir = true,
       this.filePickingType = FilePickingType.single});
@@ -98,7 +98,7 @@ class FilePickerParams {
       'allowedExtensions': allowedExtensions
           ?.map((e) => e.toLowerCase().replaceAll(".", ""))
           .toList(),
-      'mimeTypeFilter': mimeTypeFilter,
+      'mimeTypeFilter': mimeTypesFilter,
       'localOnly': localOnly,
       'copyFileToCacheDir': copyFileToCacheDir,
       'filePickingType': filePickingType.toString(),
@@ -151,7 +151,7 @@ class FileSaverParams {
 
   /// Filter MIME types.
   /// File picker will be showing only provided MIME types.
-  final List<String>? mimeTypeFilter;
+  final List<String>? mimeTypesFilter;
 
   /// Show only device local files.
   ///
@@ -160,14 +160,14 @@ class FileSaverParams {
 
   /// Create parameters for the [saveFile] method.
   const FileSaverParams(
-      {this.saveFiles, this.mimeTypeFilter, this.localOnly = false})
+      {this.saveFiles, this.mimeTypesFilter, this.localOnly = false})
       : assert(saveFiles != null && saveFiles.length != 0,
             'provide saveFiles with non null and non empty list');
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'saveFiles': saveFiles?.map((e) => e.toJson()).toList(),
-      'mimeTypeFilter': mimeTypeFilter,
+      'mimeTypesFilter': mimeTypesFilter,
       'localOnly': localOnly
     };
   }

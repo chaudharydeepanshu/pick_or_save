@@ -30,7 +30,7 @@ class PickOrSave(
     fun pickFile(
         resultCallback: MethodChannel.Result,
         allowedExtensions: List<String>,
-        mimeTypeFilter: List<String>,
+        mimeTypesFilter: List<String>,
         localOnly: Boolean,
         copyFileToCacheDir: Boolean,
         filePickingType: FilePickingType
@@ -38,14 +38,14 @@ class PickOrSave(
         try {
             Log.d(
                 LOG_TAG,
-                "pickFile - IN, allowedExtensions=$allowedExtensions, mimeTypesFilter=$mimeTypeFilter, localOnly=$localOnly, copyFileToCacheDir=$copyFileToCacheDir, filePickingType=$filePickingType"
+                "pickFile - IN, allowedExtensions=$allowedExtensions, mimeTypesFilter=$mimeTypesFilter, localOnly=$localOnly, copyFileToCacheDir=$copyFileToCacheDir, filePickingType=$filePickingType"
             )
 
             if (filePickingType == FilePickingType.MULTIPLE) {
                 pickMultipleFiles(
                     resultCallback = resultCallback,
                     allowedExtensions = allowedExtensions,
-                    mimeTypeFilter = mimeTypeFilter,
+                    mimeTypesFilter = mimeTypesFilter,
                     localOnly = localOnly,
                     copyFileToCacheDir = copyFileToCacheDir,
                     context = activity
@@ -54,7 +54,7 @@ class PickOrSave(
                 pickSingleFile(
                     resultCallback = resultCallback,
                     allowedExtensions = allowedExtensions,
-                    mimeTypeFilter = mimeTypeFilter,
+                    mimeTypesFilter = mimeTypesFilter,
                     localOnly = localOnly,
                     copyFileToCacheDir = copyFileToCacheDir,
                     context = activity
@@ -180,7 +180,9 @@ class PickOrSave(
                 )
 
                 val result = cacheFilePathFromUri(
-                    sourceFileUri = sourceFileUri!!, context = activity
+                    sourceFileUri = sourceFileUri!!,
+                    context = activity,
+                    resultCallback = resultCallback
                 )
 
                 utils.finishSuccessfullyWithString(result, resultCallback)

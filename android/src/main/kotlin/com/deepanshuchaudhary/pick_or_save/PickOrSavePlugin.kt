@@ -125,10 +125,10 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 allowedExtensions = parseMethodCallListOfStringArgument(
                     call, "allowedExtensions"
                 ) ?: listOf(),
-                mimeTypeFilter = parseMethodCallListOfStringArgument(call, "mimeTypeFilter")
+                mimeTypesFilter = parseMethodCallListOfStringArgument(call, "mimeTypesFilter")
                     ?: listOf(),
-                localOnly = call.argument("localOnly") as Boolean? == true,
-                copyFileToCacheDir = call.argument("copyFileToCacheDir") as Boolean? != false,
+                localOnly = call.argument("localOnly") ?: false,
+                copyFileToCacheDir = call.argument("copyFileToCacheDir") ?: false,
                 filePickingType = parseMethodCallFilePickingTypeArgument(call)
                     ?: FilePickingType.SINGLE
             )
@@ -137,7 +137,7 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 saveFiles = parseMethodCallListOfSaveFileInfoArgument(call, "saveFiles"),
                 mimeTypesFilter = parseMethodCallListOfStringArgument(call, "mimeTypesFilter")
                     ?: listOf(),
-                localOnly = call.argument("localOnly") as Boolean? == true,
+                localOnly = call.argument("localOnly") ?: false,
             )
             "fileMetaData" -> pickOrSave!!.fileMetaData(
                 result,

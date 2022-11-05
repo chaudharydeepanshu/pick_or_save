@@ -18,13 +18,13 @@ private var copyPickedFileToCacheDir: Boolean = true
 fun pickSingleFile(
     resultCallback: MethodChannel.Result,
     allowedExtensions: List<String>,
-    mimeTypeFilter: List<String>,
+    mimeTypesFilter: List<String>,
     localOnly: Boolean,
     copyFileToCacheDir: Boolean,
     context: Activity,
 ) {
 
-    val updatedMimeTypeFilter = mimeTypeFilter.toMutableList()
+    val updatedMimeTypeFilter = mimeTypesFilter.toMutableList()
 
     allowedExtensions.forEach {
         val mimeTypeFromExtension: String? = MimeTypeMap.getSingleton().getMimeTypeFromExtension(it)
@@ -75,13 +75,13 @@ fun pickSingleFile(
 fun pickMultipleFiles(
     resultCallback: MethodChannel.Result,
     allowedExtensions: List<String>,
-    mimeTypeFilter: List<String>,
+    mimeTypesFilter: List<String>,
     localOnly: Boolean,
     copyFileToCacheDir: Boolean,
     context: Activity,
 ) {
 
-    val updatedMimeTypeFilter = mimeTypeFilter.toMutableList()
+    val updatedMimeTypeFilter = mimeTypesFilter.toMutableList()
 
     allowedExtensions.forEach {
         val mimeTypeFromExtension: String? = MimeTypeMap.getSingleton().getMimeTypeFromExtension(it)
@@ -155,6 +155,7 @@ fun processPickedFiles(
                         context = context,
                         sourceFileUri = sourceFileUri!!,
                         destinationFileName = destinationFileName,
+                        resultCallback = filePickingResult,
                     )
                     if (cachedFilePath != null) {
                         utils.finishPickingSuccessfully(
@@ -217,6 +218,7 @@ fun processPickedFiles(
                             validFilesUris.elementAt(index), context
                         )
                     },
+                    resultCallback = filePickingResult,
                 )
                 if (cachedFilesPaths != null) {
                     utils.finishPickingSuccessfully(
