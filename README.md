@@ -47,18 +47,10 @@ Note: Setting ```copyFileToCacheDir = false``` will provide uri path which can o
 
 ```dart
 List<String>? filesPaths = await PickOrSave().filePicker(
-  params: FilePickerParams(filePickingType: FilePickingType.multiple),
+  params: FilePickerParams(enableMultipleSelection: true),
 );
 ```
 Note: Setting ```copyFileToCacheDir = false``` will provide uri paths which can only be used in android native platform.
-
-### Picking multiple files
-
-```dart
-List<String>? filesPaths = await PickOrSave().filePicker(
-  params: FilePickerParams(filePickingType: FilePickingType.multiple),
-);
-```
 
 ### Saving single file
 
