@@ -1,4 +1,4 @@
-## 1.0.4
+## 1.0.5
 
 * **Breaking:** `filePickingType` is replaced with `enableMultipleSelection`.
 * Added support [photo picker](https://developer.android.com/training/data-storage/shared/photopicker).
