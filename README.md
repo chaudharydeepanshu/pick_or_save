@@ -1,4 +1,4 @@
-[![pub package](https://img.shields.io/pub/v/pick_or_save.svg)](https://pub.dev/packages/pick_or_save) 
+[![pub package](https://img.shields.io/pub/v/pick_or_save.svg)](https://pub.dev/packages/pick_or_save) [![wakatime](https://wakatime.com/badge/user/83f3b15d-49de-4c01-b8de-bbc132f11be1/project/a5e5bda6-1125-46d7-9dc4-5028186265ca.svg)](https://wakatime.com/badge/user/83f3b15d-49de-4c01-b8de-bbc132f11be1/project/a5e5bda6-1125-46d7-9dc4-5028186265ca)
 
 ## Package description
 
