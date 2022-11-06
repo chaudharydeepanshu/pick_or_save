@@ -54,8 +54,8 @@ class MethodChannelPickOrSave extends PickOrSavePlatform {
   }
 }
 
-/// File picking types for [filePicker].
-enum FilePickingType { single, multiple }
+/// Picker types for [filePicker].
+enum PickerType { file, photo }
 
 /// Parameters for the [filePicker] method.
 class FilePickerParams {
@@ -66,6 +66,9 @@ class FilePickerParams {
 
   /// Filter MIME types.
   /// File picker will be showing only provided MIME types.
+  ///
+  /// If pickerType is PickerType.photo then the mimeTypesFilter is necessary and the first mime type will only be effective.
+  /// Supported mimeTypesFilter when pickerType is PickerType.photo is [video/*] for videos or [image/*] for images or [*/*] for images and videos both.
   final List<String>? mimeTypesFilter;
 
   /// Show only device local files.
@@ -79,29 +82,42 @@ class FilePickerParams {
   /// If false, [filePicker] returns uri of original picked file.
   final bool copyFileToCacheDir;
 
-  /// File picking types (single, multiple).
+  /// Picker types for (file, photo).
   ///
-  /// To pick multiple files set filePickingType to FilePickingType.multiple.
-  /// To pick single file set filePickingType to FilePickingType.single.
-  final FilePickingType filePickingType;
+  /// Defaults to PickerType.file.
+  /// If pickerType is PickerType.photo then the mimeTypesFilter is necessary and the first mime type will only be effective.
+  /// Supported mimeTypesFilter when pickerType is PickerType.photo is [video/*] for videos or [image/*] for images or [*/*] for images and videos both.
+  final PickerType pickerType;
+
+  /// To pick multiple files set this to true.
+  ///
+  /// Defaults to false.
+  final bool enableMultipleSelection;
 
   /// Create parameters for the [filePicker] method.
-  const FilePickerParams(
-      {this.allowedExtensions,
-      this.mimeTypesFilter,
-      this.localOnly = false,
-      this.copyFileToCacheDir = true,
-      this.filePickingType = FilePickingType.single});
+  const FilePickerParams({
+    this.allowedExtensions,
+    this.mimeTypesFilter,
+    this.localOnly = false,
+    this.copyFileToCacheDir = true,
+    this.pickerType = PickerType.file,
+    this.enableMultipleSelection = false,
+  }) : assert(
+            pickerType == PickerType.photo
+                ? mimeTypesFilter != null && mimeTypesFilter.length >= 1
+                : true,
+            'If pickerType is PickerType.photo then mimeTypesFilter should not be null and should not be empty');
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'allowedExtensions': allowedExtensions
           ?.map((e) => e.toLowerCase().replaceAll(".", ""))
           .toList(),
-      'mimeTypeFilter': mimeTypesFilter,
+      'mimeTypesFilter': mimeTypesFilter,
       'localOnly': localOnly,
       'copyFileToCacheDir': copyFileToCacheDir,
-      'filePickingType': filePickingType.toString(),
+      'pickerType': pickerType.toString(),
+      'enableMultipleSelection': enableMultipleSelection,
     };
   }
 }

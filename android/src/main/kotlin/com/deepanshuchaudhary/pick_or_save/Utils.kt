@@ -1,9 +1,14 @@
 package com.deepanshuchaudhary.pick_or_save
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
+import android.database.Cursor
 import android.net.Uri
+import android.os.Build
+import android.os.ext.SdkExtensions.getExtensionVersion
 import android.provider.OpenableColumns
 import android.util.Log
 import android.webkit.MimeTypeMap
@@ -25,6 +30,17 @@ class Utils {
     // Request code for ACTION_OPEN_DOCUMENT_TREE.
     val REQUEST_CODE_SAVE_MULTIPLE_FILES = 3
 
+    @SuppressLint("NewApi")
+    fun isPhotoPickerAvailable(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            true
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            getExtensionVersion(Build.VERSION_CODES.R) >= 2
+        } else {
+            false
+        }
+    }
+
     fun applyMimeTypesFilterToIntent(mimeTypesFilter: List<String>?, intent: Intent) {
         if ((mimeTypesFilter != null) && mimeTypesFilter.isNotEmpty()) {
             intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypesFilter.toTypedArray())
@@ -32,16 +48,20 @@ class Utils {
     }
 
     fun getFileNameFromPickedDocumentUri(uri: Uri?, context: Activity): String? {
-        if (uri == null) {
-            return null
-        }
         var fileName: String? = null
-        context.contentResolver.query(uri, null, null, null, null, null)?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                fileName =
-                    cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
+        if (uri?.scheme == "content") {
+            val contentResolver: ContentResolver = context.contentResolver
+            val cursor: Cursor? = contentResolver.query(uri, null, null, null, null)
+            cursor.use {
+                if ((it != null) && it.moveToFirst()) {
+                    fileName = it.getString(it.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
+                }
             }
         }
+        if (fileName == null) {
+            fileName = uri?.lastPathSegment
+        }
+
         return cleanupFileName(fileName)
     }
 

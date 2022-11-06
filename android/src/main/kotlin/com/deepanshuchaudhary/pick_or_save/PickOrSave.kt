@@ -13,8 +13,8 @@ import kotlinx.coroutines.launch
 
 private const val LOG_TAG = "PickOrSave"
 
-// For deciding what type of file picking dialog to open.
-enum class FilePickingType { SINGLE, MULTIPLE }
+// For deciding what type of picker to open.
+enum class PickerType { File, Photo }
 
 var filePickingResult: MethodChannel.Result? = null
 
@@ -33,33 +33,80 @@ class PickOrSave(
         mimeTypesFilter: List<String>,
         localOnly: Boolean,
         copyFileToCacheDir: Boolean,
-        filePickingType: FilePickingType
+        pickerType: PickerType,
+        enableMultipleSelection: Boolean
     ) {
         try {
             Log.d(
                 LOG_TAG,
-                "pickFile - IN, allowedExtensions=$allowedExtensions, mimeTypesFilter=$mimeTypesFilter, localOnly=$localOnly, copyFileToCacheDir=$copyFileToCacheDir, filePickingType=$filePickingType"
+                "pickFile - IN, allowedExtensions=$allowedExtensions, mimeTypesFilter=$mimeTypesFilter, localOnly=$localOnly, copyFileToCacheDir=$copyFileToCacheDir, pickerType=$pickerType, enableMultipleSelection=$enableMultipleSelection"
             )
 
-            if (filePickingType == FilePickingType.MULTIPLE) {
-                pickMultipleFiles(
-                    resultCallback = resultCallback,
-                    allowedExtensions = allowedExtensions,
-                    mimeTypesFilter = mimeTypesFilter,
-                    localOnly = localOnly,
-                    copyFileToCacheDir = copyFileToCacheDir,
-                    context = activity
-                )
+            if (filePickingResult != null) {
+                utils.finishWithAlreadyActiveError(resultCallback)
+                return
+            } else if (fileSavingResult != null) {
+                utils.finishWithAlreadyActiveError(resultCallback)
+                return
             } else {
-                pickSingleFile(
-                    resultCallback = resultCallback,
-                    allowedExtensions = allowedExtensions,
-                    mimeTypesFilter = mimeTypesFilter,
-                    localOnly = localOnly,
-                    copyFileToCacheDir = copyFileToCacheDir,
-                    context = activity
-                )
+                filePickingResult = resultCallback
             }
+
+            if (pickerType == PickerType.File) {
+                if (enableMultipleSelection) {
+                    pickMultipleFiles(
+                        allowedExtensions = allowedExtensions,
+                        mimeTypesFilter = mimeTypesFilter,
+                        localOnly = localOnly,
+                        copyFileToCacheDir = copyFileToCacheDir,
+                        context = activity
+                    )
+                } else {
+                    pickSingleFile(
+                        allowedExtensions = allowedExtensions,
+                        mimeTypesFilter = mimeTypesFilter,
+                        localOnly = localOnly,
+                        copyFileToCacheDir = copyFileToCacheDir,
+                        context = activity
+                    )
+                }
+            } else if (pickerType == PickerType.Photo) {
+
+                val photoPickerMimeType: String = mimeTypesFilter.first()
+
+                if (utils.isPhotoPickerAvailable()) {
+                    pickSingleOrMultiplePhoto(
+                        allowedExtensions = allowedExtensions,
+                        photoPickerMimeType = photoPickerMimeType,
+                        copyFileToCacheDir = copyFileToCacheDir,
+                        enableMultipleSelection = enableMultipleSelection,
+                        context = activity
+                    )
+
+                } else {
+                    // Consider implementing fallback functionality so that users can still
+                    // select images and videos if Photo Picker is not available.
+                    if (enableMultipleSelection) {
+                        pickMultipleFiles(
+                            allowedExtensions = allowedExtensions,
+                            mimeTypesFilter = mimeTypesFilter + photoPickerMimeType,
+                            localOnly = localOnly,
+                            copyFileToCacheDir = copyFileToCacheDir,
+                            context = activity
+                        )
+                    } else {
+                        pickSingleFile(
+                            allowedExtensions = allowedExtensions,
+                            mimeTypesFilter = mimeTypesFilter + photoPickerMimeType,
+                            localOnly = localOnly,
+                            copyFileToCacheDir = copyFileToCacheDir,
+                            context = activity
+                        )
+                    }
+
+                }
+            }
+
 
         } catch (e: Exception) {
             utils.finishWithError(

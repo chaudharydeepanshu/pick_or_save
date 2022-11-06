@@ -1,3 +1,18 @@
+## 1.0.4
+
+* **Breaking:** `filePickingType` is replaced with `enableMultipleSelection`.
+* Added support [photo picker](https://developer.android.com/training/data-storage/shared/photopicker).
+
+  To use photo picker set `pickerType` to `PickerType.photo` and then set the `mimeTypesFilter`.
+
+  Note 1: Photo picker only supports single mime type so `mimeTypesFilter` first value should be valid such as image mime(image/*) or video mime(video/*) or both(*/*).
+
+  Note 2: For Photo picker `allowedExtensions` doesn't automatically combines with `mimeTypeFilter` by detecting mimeType from extensions because of note 1. But still the result would contain only files with extension provided in `allowedExtensions`.
+
+  Note 3: If photo picker is not available on the users device then we automatically fallback to `PickerType.file`.
+
+* Fixed `mimeTypesFilter` not working for `filePicker`.
+
 ## 1.0.3
 
 * **Breaking:** `mimeTypeFilter` is replaced with `mimeTypesFilter` everywhere.

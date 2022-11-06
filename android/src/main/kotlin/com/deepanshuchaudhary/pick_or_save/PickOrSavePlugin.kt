@@ -129,8 +129,8 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                     ?: listOf(),
                 localOnly = call.argument("localOnly") ?: false,
                 copyFileToCacheDir = call.argument("copyFileToCacheDir") ?: false,
-                filePickingType = parseMethodCallFilePickingTypeArgument(call)
-                    ?: FilePickingType.SINGLE
+                pickerType = parseMethodCallPickerTypeArgument(call) ?: PickerType.File,
+                enableMultipleSelection = call.argument("enableMultipleSelection") ?: true,
             )
             "saveFiles" -> pickOrSave!!.saveFile(
                 result,
@@ -188,13 +188,15 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 //        return null
 //    }
 
-    private fun parseMethodCallFilePickingTypeArgument(call: MethodCall): FilePickingType? {
-        val arg = "filePickingType"
+    private fun parseMethodCallPickerTypeArgument(call: MethodCall): PickerType? {
+        val arg = "pickerType"
         if (call.hasArgument(arg)) {
-            return if (call.argument<String>(arg)?.toString() == "FilePickingType.multiple") {
-                FilePickingType.MULTIPLE
+            return if (call.argument<String>(arg)?.toString() == "PickerType.file") {
+                PickerType.File
+            } else if (call.argument<String>(arg)?.toString() == "PickerType.photo") {
+                PickerType.Photo
             } else {
-                FilePickingType.SINGLE
+                null
             }
         }
         return null

@@ -2,7 +2,7 @@ group 'com.deepanshuchaudhary.pick_or_save'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.7.10'
+    ext.kotlin_version = '1.7.20'
     repositories {
         google()
         mavenCentral()
@@ -42,9 +42,13 @@ android {
 
     defaultConfig {
         minSdkVersion 21
+        targetSdkVersion 33
     }
 }
 
 dependencies {
     implementation 'androidx.documentfile:documentfile:1.0.1'
+
+    def activity_version = "1.6.1"
+    implementation "androidx.activity:activity-ktx:$activity_version"
 }

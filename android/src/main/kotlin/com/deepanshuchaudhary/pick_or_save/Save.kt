@@ -233,8 +233,8 @@ fun processSingleSaveFile(
     resultCode: Int, data: Intent?, context: Activity
 ): Boolean {
 
-    val uiScope = CoroutineScope(Dispatchers.Main)
-    uiScope.launch {
+    val coroutineScope = CoroutineScope(Dispatchers.Main)
+    coroutineScope.launch {
 
         val utils = Utils()
 
@@ -300,8 +300,8 @@ fun processMultipleSaveFile(
     resultCode: Int, data: Intent?, context: Activity
 ): Boolean {
 
-    val uiScope = CoroutineScope(Dispatchers.Main)
-    uiScope.launch {
+    val coroutineScope = CoroutineScope(Dispatchers.Main)
+    fileSaveJob = coroutineScope.launch {
 
         val utils = Utils()
 
@@ -311,28 +311,21 @@ fun processMultipleSaveFile(
             val destinationDirectoryUri = data.data
             if (destinationSaveFilesInfo.isNotEmpty()) {
 
-                val uiScope = CoroutineScope(Dispatchers.Main)
-                fileSaveJob = uiScope.launch {
+                val savedFilesPaths: List<String> = utils.saveMultipleFilesOnBackground(
+                    destinationSaveFilesInfo, destinationDirectoryUri!!, fileSavingResult, context
+                )
 
-                    val savedFilesPaths: List<String> = utils.saveMultipleFilesOnBackground(
-                        destinationSaveFilesInfo,
-                        destinationDirectoryUri!!,
-                        fileSavingResult,
-                        context
+                if (savedFilesPaths.isNotEmpty()) {
+                    utils.finishSavingSuccessfully(
+                        savedFilesPaths, fileSavingResult
                     )
-
-                    if (savedFilesPaths.isNotEmpty()) {
-                        utils.finishSavingSuccessfully(
-                            savedFilesPaths, fileSavingResult
-                        )
-                    } else {
-                        utils.finishWithError(
-                            "files_saving_failed",
-                            "saved files paths list was empty",
-                            "saved files paths list was empty",
-                            fileSavingResult
-                        )
-                    }
+                } else {
+                    utils.finishWithError(
+                        "files_saving_failed",
+                        "saved files paths list was empty",
+                        "saved files paths list was empty",
+                        fileSavingResult
+                    )
                 }
 
             } else {

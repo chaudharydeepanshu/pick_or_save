@@ -160,7 +160,7 @@ class _MyAppState extends State<MyApp> {
                           final params = FilePickerParams(
                             localOnly: _localOnly,
                             copyFileToCacheDir: _copyFileToCacheDir,
-                            filePickingType: FilePickingType.multiple,
+                            pickerType: PickerType.file,
                             mimeTypesFilter: ["application/pdf"],
                             allowedExtensions: [
                               ".JPEG",
@@ -174,10 +174,53 @@ class _MyAppState extends State<MyApp> {
                               ".CCITT",
                               ".JBIG2"
                             ],
+                            enableMultipleSelection: true,
                           );
                           await _filePicker(params);
                         },
                   child: const Text("Pick multiple file")),
+              OutlinedButton(
+                  onPressed: _isBusy
+                      ? null
+                      : () async {
+                          final params = FilePickerParams(
+                            localOnly: _localOnly,
+                            copyFileToCacheDir: _copyFileToCacheDir,
+                            pickerType: PickerType.photo,
+                            mimeTypesFilter: ["*/*"],
+                            enableMultipleSelection: true,
+                          );
+                          await _filePicker(params);
+                        },
+                  child: const Text("Pick image and video")),
+              OutlinedButton(
+                  onPressed: _isBusy
+                      ? null
+                      : () async {
+                          final params = FilePickerParams(
+                            localOnly: _localOnly,
+                            copyFileToCacheDir: _copyFileToCacheDir,
+                            pickerType: PickerType.photo,
+                            mimeTypesFilter: ["image/*"],
+                            enableMultipleSelection: true,
+                          );
+                          await _filePicker(params);
+                        },
+                  child: const Text("Pick image")),
+              OutlinedButton(
+                  onPressed: _isBusy
+                      ? null
+                      : () async {
+                          final params = FilePickerParams(
+                            localOnly: _localOnly,
+                            copyFileToCacheDir: _copyFileToCacheDir,
+                            pickerType: PickerType.photo,
+                            mimeTypesFilter: ["video/*"],
+                            enableMultipleSelection: true,
+                          );
+                          await _filePicker(params);
+                        },
+                  child: const Text("Pick video")),
               OutlinedButton(
                   onPressed: _isBusy
                       ? null

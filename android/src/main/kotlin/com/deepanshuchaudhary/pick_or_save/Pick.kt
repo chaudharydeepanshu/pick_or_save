@@ -1,12 +1,13 @@
 package com.deepanshuchaudhary.pick_or_save
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.provider.MediaStore.*
 import android.util.Log
 import android.webkit.MimeTypeMap
 import com.deepanshuchaudhary.pick_or_save.PickOrSavePlugin.Companion.LOG_TAG
-import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -14,9 +15,43 @@ import kotlinx.coroutines.launch
 private var validFileExtensions: List<String>? = null
 private var copyPickedFileToCacheDir: Boolean = true
 
+// For picking photo.
+@SuppressLint("NewApi")
+fun pickSingleOrMultiplePhoto(
+    allowedExtensions: List<String>,
+    photoPickerMimeType: String,
+    copyFileToCacheDir: Boolean,
+    enableMultipleSelection: Boolean,
+    context: Activity,
+) {
+
+    val utils = Utils()
+
+    val begin = System.nanoTime()
+
+    validFileExtensions = allowedExtensions
+    copyPickedFileToCacheDir = copyFileToCacheDir
+
+    val intent = Intent(ACTION_PICK_IMAGES)
+
+    if (enableMultipleSelection) {
+        val maxSelectionAllowed = getPickImagesMaxLimit()
+        intent.putExtra(EXTRA_PICK_IMAGES_MAX, maxSelectionAllowed)
+    }
+
+    intent.type = photoPickerMimeType
+
+    context.startActivityForResult(intent, utils.REQUEST_CODE_PICK_FILE)
+
+    Log.d(LOG_TAG, "pickSingleOrMultiplePhoto - OUT")
+
+    val end = System.nanoTime()
+    println("Elapsed time in nanoseconds: ${end - begin}")
+
+}
+
 // For picking single file.
 fun pickSingleFile(
-    resultCallback: MethodChannel.Result,
     allowedExtensions: List<String>,
     mimeTypesFilter: List<String>,
     localOnly: Boolean,
@@ -34,16 +69,6 @@ fun pickSingleFile(
     }
 
     val utils = Utils()
-
-    if (filePickingResult != null) {
-        utils.finishWithAlreadyActiveError(resultCallback)
-        return
-    } else if (fileSavingResult != null) {
-        utils.finishWithAlreadyActiveError(resultCallback)
-        return
-    } else {
-        filePickingResult = resultCallback
-    }
 
     val begin = System.nanoTime()
 
@@ -73,7 +98,6 @@ fun pickSingleFile(
 
 // For picking multiple file.
 fun pickMultipleFiles(
-    resultCallback: MethodChannel.Result,
     allowedExtensions: List<String>,
     mimeTypesFilter: List<String>,
     localOnly: Boolean,
@@ -91,16 +115,6 @@ fun pickMultipleFiles(
     }
 
     val utils = Utils()
-
-    if (filePickingResult != null) {
-        utils.finishWithAlreadyActiveError(resultCallback)
-        return
-    } else if (fileSavingResult != null) {
-        utils.finishWithAlreadyActiveError(resultCallback)
-        return
-    } else {
-        filePickingResult = resultCallback
-    }
 
     val begin = System.nanoTime()
 
