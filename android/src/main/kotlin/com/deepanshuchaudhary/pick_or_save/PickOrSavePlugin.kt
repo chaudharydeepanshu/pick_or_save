@@ -140,13 +140,11 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 localOnly = call.argument("localOnly") ?: false,
             )
             "fileMetaData" -> pickOrSave!!.fileMetaData(
-                result,
-                sourceFileUri = call.argument("sourceFileUri"),
-                sourceFilePath = call.argument("sourceFilePath")
+                result, sourceFilePathOrUri = call.argument("filePath")
             )
-            "cacheFilePathFromUri" -> pickOrSave!!.cacheFilePathFromUri(
+            "cacheFilePathFromUri" -> pickOrSave!!.cacheFilePath(
                 result,
-                sourceFileUri = call.argument("fileUri"),
+                sourceFilePathOrUri = call.argument("filePath"),
             )
             "cancelFilesSaving" -> pickOrSave!!.cancelFilesSaving()
             else -> result.notImplemented()

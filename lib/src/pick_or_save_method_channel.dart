@@ -40,7 +40,7 @@ class MethodChannelPickOrSave extends PickOrSavePlatform {
 
   @override
   Future<String?> cacheFilePathFromUri(
-      {CacheFilePathFromUriParams? params}) async {
+      {CacheFilePathFromPathParams? params}) async {
     final String? result = await methodChannel.invokeMethod<String?>(
         'cacheFilePathFromUri', params?.toJson());
     return result;
@@ -120,6 +120,13 @@ class FilePickerParams {
       'enableMultipleSelection': enableMultipleSelection,
     };
   }
+
+  // Implement toString to make it easier to see information
+  // when using the print statement.
+  @override
+  String toString() {
+    return 'FilePickerParams{allowedExtensions: $allowedExtensions, mimeTypesFilter: $mimeTypesFilter, localOnly: $localOnly, copyFileToCacheDir: $copyFileToCacheDir, pickerType: $pickerType, enableMultipleSelection: $enableMultipleSelection}';
+  }
 }
 
 /// File saving types for [fileSaver].
@@ -158,6 +165,13 @@ class SaveFileInfo {
       'fileName': fileName,
     };
   }
+
+  // Implement toString to make it easier to see information
+  // when using the print statement.
+  @override
+  String toString() {
+    return 'SaveFileInfo{filePath: $filePath, fileData: $fileData, fileName: $fileName}';
+  }
 }
 
 /// Parameters for the [fileSaver] method.
@@ -187,30 +201,36 @@ class FileSaverParams {
       'localOnly': localOnly
     };
   }
+
+  // Implement toString to make it easier to see information
+  // when using the print statement.
+  @override
+  String toString() {
+    return 'FileSaverParams{saveFiles: $saveFiles, mimeTypesFilter: $mimeTypesFilter, localOnly: $localOnly}';
+  }
 }
 
 /// Parameters for the [fileMetaData] method.
 class FileMetadataParams {
   /// Path of the file.
-  final String? sourceFilePath;
-
-  /// URI of the file.
-  final String? sourceFileUri;
+  final String filePath;
 
   /// Create parameters for the [fileMetaData] method.
   const FileMetadataParams({
-    this.sourceFilePath,
-    this.sourceFileUri,
-  })  : assert(sourceFileUri != null || sourceFilePath != null,
-            'provide anyone out of sourceFilePath or sourceFileURI'),
-        assert(sourceFileUri == null || sourceFilePath == null,
-            'sourceFilePath or sourceFileURI should be null');
+    required this.filePath,
+  });
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
-      'sourceFilePath': sourceFilePath,
-      'sourceFileUri': sourceFileUri,
+      'filePath': filePath,
     };
+  }
+
+  // Implement toString to make it easier to see information
+  // when using the print statement.
+  @override
+  String toString() {
+    return 'FileMetadataParams{filePath: $filePath}';
   }
 }
 
@@ -234,18 +254,18 @@ class FileMetadata {
 }
 
 /// Parameters for the [cacheFilePathFromUri] method.
-class CacheFilePathFromUriParams {
-  /// URI of the file.
-  final String fileUri;
+class CacheFilePathFromPathParams {
+  /// Path of the file.
+  final String filePath;
 
   /// Create parameters for the [cacheFilePathFromUri] method.
-  const CacheFilePathFromUriParams({
-    required this.fileUri,
+  const CacheFilePathFromPathParams({
+    required this.filePath,
   });
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
-      'fileUri': fileUri,
+      'filePath': filePath,
     };
   }
 
@@ -253,6 +273,6 @@ class CacheFilePathFromUriParams {
   // when using the print statement.
   @override
   String toString() {
-    return 'CacheFilePathFromUriParams{fileUri: $fileUri}';
+    return 'CacheFilePathFromUriParams{filePath: $filePath}';
   }
 }

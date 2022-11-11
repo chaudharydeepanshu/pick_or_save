@@ -1,3 +1,44 @@
+## 2.0.1
+
+* **Breaking:** `FileMetadataParams` now only takes `filePath` which can take both absolute file path or Uri so I removed `sourceFilePath` and `sourceFileUri`.
+* **Breaking:** `CacheFilePathFromUriParams` is replaced with `CacheFilePathFromPathParams`.
+* **Breaking:** `CacheFilePathFromPathParams` now only takes `filePath` which can take both absolute file path or Uri so I removed `fileUri`.
+* **Breaking:** Now if `copyFileToCacheDir` set to true the returned path file name will be different from picked file name.
+
+  This was done to avoid deleting or rewriting existing cache files with same name.
+
+  But you can still get the original name by following the pattern.
+
+  For example:- If you pick a file with name "My Test File.pdf" then the cached file will be something like this "My Test File.8190480413118007032.pdf". From that we see the pattern would be "original name prefix"+"."+"random numbers"+"."+"file extension". So what we need to do is to just remove the "."+"random numbers" to get the real name. Look at the below code:
+
+```
+String getRealName(String pickOrSaveCachedFileName) {
+  int indexOfExtDot = pickOrSaveCachedFileName.lastIndexOf('.');
+  if (indexOfExtDot == -1) {
+    return pickOrSaveCachedFileName;
+  } else {
+    String fileExt =
+        pickOrSaveCachedFileName.substring(indexOfExtDot).toLowerCase();
+    String fileNameWithoutExtension = pickOrSaveCachedFileName.substring(
+        0, pickOrSaveCachedFileName.length - fileExt.length);
+    int indexOfRandomNumDot = fileNameWithoutExtension.lastIndexOf('.');
+    if (indexOfRandomNumDot == -1) {
+      return pickOrSaveCachedFileName;
+    } else {
+      String dotAndRandomNum =
+          fileNameWithoutExtension.substring(indexOfRandomNumDot).toLowerCase();
+      String fileNameWithoutDotAndRandomNumAndExtension =
+          fileNameWithoutExtension.substring(
+              0, fileNameWithoutExtension.length - dotAndRandomNum.length);
+      return fileNameWithoutDotAndRandomNumAndExtension + fileExt;
+    }
+  }
+}
+```
+
+* Fixes app crash due to `java.lang.IllegalStateException: Reply already submitted`.
+* Recreated example to easily try all functionalities of plugin.
+
 ## 1.0.5
 
 * **Breaking:** `filePickingType` is replaced with `enableMultipleSelection`.

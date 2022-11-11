@@ -3,8 +3,8 @@ package com.deepanshuchaudhary.pick_or_save
 import android.app.Activity
 import io.flutter.plugin.common.MethodChannel
 
-suspend fun cacheFilePathFromUri(
-    sourceFileUri: String, context: Activity, resultCallback: MethodChannel.Result?,
+suspend fun cacheFilePathFromPathOrUri(
+    sourceFilePathOrUri: String, context: Activity, resultCallback: MethodChannel.Result?,
 ): String? {
 
     val utils = Utils()
@@ -13,11 +13,11 @@ suspend fun cacheFilePathFromUri(
 
 
     val destinationFileName =
-        utils.getFileNameFromPickedDocumentUri(utils.getURI(sourceFileUri), context)
+        utils.getFileNameFromPickedDocumentUri(utils.getURI(sourceFilePathOrUri), context)
 
     val cachedFilePath: String? = utils.copyFileToCacheDirOnBackground(
         context = context,
-        sourceFileUri = utils.getURI(sourceFileUri),
+        sourceFileUri = utils.getURI(sourceFilePathOrUri),
         destinationFileName = destinationFileName ?: "Unknown.ext",
         resultCallback = resultCallback
     )

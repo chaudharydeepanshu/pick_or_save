@@ -20,6 +20,10 @@ var filePickingResult: MethodChannel.Result? = null
 
 var fileSavingResult: MethodChannel.Result? = null
 
+var fileMetadataResult: MethodChannel.Result? = null
+
+var cacheFilePathFromUriResult: MethodChannel.Result? = null
+
 class PickOrSave(
     private val activity: Activity
 ) : PluginRegistry.ActivityResultListener {
@@ -72,9 +76,9 @@ class PickOrSave(
                 }
             } else if (pickerType == PickerType.Photo) {
 
-                val photoPickerMimeType: String = mimeTypesFilter.first()
-
                 if (utils.isPhotoPickerAvailable()) {
+                    val photoPickerMimeType: String = mimeTypesFilter.first().trim()
+
                     pickSingleOrMultiplePhoto(
                         allowedExtensions = allowedExtensions,
                         photoPickerMimeType = photoPickerMimeType,
@@ -84,12 +88,22 @@ class PickOrSave(
                     )
 
                 } else {
+                    val updatedMimeTypes: MutableList<String> = mutableListOf()
+
+                    for (i in mimeTypesFilter.indices) {
+                        if (i == 0 && mimeTypesFilter[i].trim() == "*/*") {
+                            updatedMimeTypes.addAll(listOf("image/*", "video/*"))
+                        } else {
+                            updatedMimeTypes.add(mimeTypesFilter[i])
+                        }
+                    }
+
                     // Consider implementing fallback functionality so that users can still
                     // select images and videos if Photo Picker is not available.
                     if (enableMultipleSelection) {
                         pickMultipleFiles(
                             allowedExtensions = allowedExtensions,
-                            mimeTypesFilter = mimeTypesFilter + photoPickerMimeType,
+                            mimeTypesFilter = updatedMimeTypes,
                             localOnly = localOnly,
                             copyFileToCacheDir = copyFileToCacheDir,
                             context = activity
@@ -97,7 +111,7 @@ class PickOrSave(
                     } else {
                         pickSingleFile(
                             allowedExtensions = allowedExtensions,
-                            mimeTypesFilter = mimeTypesFilter + photoPickerMimeType,
+                            mimeTypesFilter = updatedMimeTypes,
                             localOnly = localOnly,
                             copyFileToCacheDir = copyFileToCacheDir,
                             context = activity
@@ -110,11 +124,11 @@ class PickOrSave(
 
         } catch (e: Exception) {
             utils.finishWithError(
-                "pickFile_exception", e.stackTraceToString(), null, resultCallback
+                "pickFile_exception", e.stackTraceToString(), null, filePickingResult
             )
         } catch (e: Error) {
             utils.finishWithError(
-                "pickFile_error", e.stackTraceToString(), null, resultCallback
+                "pickFile_error", e.stackTraceToString(), null, filePickingResult
             )
         }
     }
@@ -133,23 +147,34 @@ class PickOrSave(
                 "saveFile - IN, saveFiles=$saveFiles, mimeTypesFilter=$mimeTypesFilter, localOnly=$localOnly"
             )
 
+            if (filePickingResult != null) {
+                utils.finishWithAlreadyActiveError(resultCallback)
+                return
+            } else if (fileSavingResult != null) {
+                utils.finishWithAlreadyActiveError(resultCallback)
+                return
+            } else {
+                fileSavingResult = resultCallback
+//        utils.cancelSaving()
+            }
+
             if (saveFiles == null) {
                 utils.finishWithError(
                     "saveFiles_not_found",
                     "Save files list is null",
                     "Save files list is null",
-                    resultCallback
+                    filePickingResult
                 )
             } else if (saveFiles.isEmpty()) {
                 utils.finishWithError(
                     "saveFiles_not_found",
                     "Save files list is empty",
                     "Save files list is empty",
-                    resultCallback
+                    filePickingResult
                 )
             } else if (saveFiles.size == 1) {
                 saveSingleFile(
-                    resultCallback = resultCallback,
+                    resultCallback = filePickingResult,
                     saveFileInfo = saveFiles.first(),
                     mimeTypesFilter = mimeTypesFilter,
                     localOnly = localOnly,
@@ -157,7 +182,7 @@ class PickOrSave(
                 )
             } else {
                 saveMultipleFiles(
-                    resultCallback = resultCallback,
+                    resultCallback = filePickingResult,
                     saveFilesInfo = saveFiles,
                     mimeTypesFilter = mimeTypesFilter,
                     localOnly = localOnly,
@@ -168,11 +193,11 @@ class PickOrSave(
 
         } catch (e: Exception) {
             utils.finishWithError(
-                "saveFile_exception", e.stackTraceToString(), null, resultCallback
+                "saveFile_exception", e.stackTraceToString(), null, filePickingResult
             )
         } catch (e: Error) {
             utils.finishWithError(
-                "saveFile_error", e.stackTraceToString(), null, resultCallback
+                "saveFile_error", e.stackTraceToString(), null, filePickingResult
             )
         }
     }
@@ -180,21 +205,20 @@ class PickOrSave(
     // For picking single file or multiple files.
     fun fileMetaData(
         resultCallback: MethodChannel.Result,
-        sourceFileUri: String?,
-        sourceFilePath: String?,
+        sourceFilePathOrUri: String?,
     ) {
 
         try {
 
             Log.d(
-                LOG_TAG,
-                "fileMetaData - IN, sourceFileUri=$sourceFileUri, sourceFilePath=$sourceFilePath"
+                LOG_TAG, "fileMetaData - IN, sourceFilePathOrUri=$sourceFilePathOrUri"
             )
 
-            fileMetadata(
-                resultCallback = resultCallback,
-                sourceFileUri = sourceFileUri,
-                sourceFilePath = sourceFilePath,
+            fileMetadataResult = resultCallback
+
+            fileMetadataFromPathOrUri(
+                resultCallback = fileMetadataResult,
+                sourceFilePathOrUri = sourceFilePathOrUri!!,
                 context = activity
             )
 
@@ -203,19 +227,19 @@ class PickOrSave(
 
         } catch (e: Exception) {
             utils.finishWithError(
-                "pickFile_exception", e.stackTraceToString(), null, resultCallback
+                "pickFile_exception", e.stackTraceToString(), null, fileMetadataResult
             )
         } catch (e: Error) {
             utils.finishWithError(
-                "pickFile_error", e.stackTraceToString(), null, resultCallback
+                "pickFile_error", e.stackTraceToString(), null, fileMetadataResult
             )
         }
     }
 
     // For getting cached file path from file Uri.
-    fun cacheFilePathFromUri(
+    fun cacheFilePath(
         resultCallback: MethodChannel.Result,
-        sourceFileUri: String?,
+        sourceFilePathOrUri: String?,
     ) {
         val uiScope = CoroutineScope(Dispatchers.Main)
         uiScope.launch {
@@ -223,27 +247,35 @@ class PickOrSave(
             try {
 
                 Log.d(
-                    LOG_TAG, "cacheFileFromUri - IN, sourceFileUri=$sourceFileUri"
+                    LOG_TAG, "cacheFileFromUri - IN, sourceFilePathOrUri=$sourceFilePathOrUri"
                 )
 
-                val result = cacheFilePathFromUri(
-                    sourceFileUri = sourceFileUri!!,
+                cacheFilePathFromUriResult = resultCallback
+
+                val result = cacheFilePathFromPathOrUri(
+                    sourceFilePathOrUri = sourceFilePathOrUri!!,
                     context = activity,
-                    resultCallback = resultCallback
+                    resultCallback = cacheFilePathFromUriResult
                 )
 
-                utils.finishSuccessfullyWithString(result, resultCallback)
+                utils.finishSuccessfullyWithString(result, cacheFilePathFromUriResult)
 
                 Log.d(LOG_TAG, "cacheFileFromUri - OUT")
 
 
             } catch (e: Exception) {
                 utils.finishWithError(
-                    "cacheFileFromUri_exception", e.stackTraceToString(), null, resultCallback
+                    "cacheFileFromUri_exception",
+                    e.stackTraceToString(),
+                    null,
+                    cacheFilePathFromUriResult
                 )
             } catch (e: Error) {
                 utils.finishWithError(
-                    "cacheFileFromUri_error", e.stackTraceToString(), null, resultCallback
+                    "cacheFileFromUri_error",
+                    e.stackTraceToString(),
+                    null,
+                    cacheFilePathFromUriResult
                 )
             }
 

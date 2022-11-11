@@ -2,7 +2,6 @@ package com.deepanshuchaudhary.pick_or_save
 
 import android.app.Activity
 import android.database.Cursor
-import android.net.Uri
 import android.provider.OpenableColumns
 import android.util.Log
 import androidx.documentfile.provider.DocumentFile
@@ -12,11 +11,8 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-fun fileMetadata(
-    resultCallback: MethodChannel.Result,
-    sourceFileUri: String?,
-    sourceFilePath: String?,
-    context: Activity
+fun fileMetadataFromPathOrUri(
+    resultCallback: MethodChannel.Result?, sourceFilePathOrUri: String, context: Activity
 ) {
 
     val utils = Utils()
@@ -25,13 +21,33 @@ fun fileMetadata(
 
     val fileMetaData: MutableList<String> = mutableListOf()
 
-    if (sourceFileUri != null) {
+    val sourceFileUri = utils.getURI(sourceFilePathOrUri)
 
+    val parsedScheme: String? = sourceFileUri.scheme
+
+    fileMetaData.clear()
+
+    if (parsedScheme == "file") {
+        val f = File(sourceFileUri.path!!)
+        if (f.exists()) {
+            fileMetaData.add(f.name)
+            fileMetaData.add(f.length().toString())
+            fileMetaData.add(
+                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ENGLISH).format(
+                    Date(f.lastModified())
+                )
+            )
+            utils.finishSuccessfullyWithListOfString(fileMetaData, resultCallback)
+        } else {
+            println("The File does not exist")
+            utils.finishSuccessfullyWithListOfString(null, resultCallback)
+        }
+    } else {
         // The query, because it only applies to a single document, returns only
         // one row. There's no need to filter, sort, or select fields,
         // because we want all fields for one document.
         val cursor: Cursor? = contentResolver.query(
-            Uri.parse(sourceFileUri), null, null, null, null, null
+            sourceFileUri, null, null, null, null, null
         )
 
         cursor?.use {
@@ -72,7 +88,7 @@ fun fileMetadata(
 
                 val lastModified: String
 
-                val documentFile = DocumentFile.fromSingleUri(context, Uri.parse(sourceFileUri))
+                val documentFile = DocumentFile.fromSingleUri(context, sourceFileUri)
 
                 lastModified = if (documentFile != null) {
                     if (documentFile.lastModified() != 0.toLong()) {
@@ -96,22 +112,6 @@ fun fileMetadata(
             utils.finishSuccessfullyWithListOfString(null, resultCallback)
         } else {
             utils.finishSuccessfullyWithListOfString(fileMetaData, resultCallback)
-        }
-    } else {
-        fileMetaData.clear()
-        val f = File(sourceFilePath!!)
-        if (f.exists()) {
-            fileMetaData.add(f.name)
-            fileMetaData.add(f.length().toString())
-            fileMetaData.add(
-                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ENGLISH).format(
-                    Date(f.lastModified())
-                )
-            )
-            utils.finishSuccessfullyWithListOfString(fileMetaData, resultCallback)
-        } else {
-            println("The File does not exist")
-            utils.finishSuccessfullyWithListOfString(null, resultCallback)
         }
     }
 }

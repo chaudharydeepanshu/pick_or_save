@@ -32,7 +32,7 @@ class PickOrSave {
   ///
   /// Returns cached file path.
   /// Throws exception on error.
-  Future<String?> cacheFilePathFromUri({CacheFilePathFromUriParams? params}) {
+  Future<String?> cacheFilePathFromUri({CacheFilePathFromPathParams? params}) {
     return PickOrSavePlatform.instance.cacheFilePathFromUri(params: params);
   }
 

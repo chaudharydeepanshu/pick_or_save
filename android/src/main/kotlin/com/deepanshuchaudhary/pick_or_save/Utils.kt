@@ -110,6 +110,11 @@ class Utils {
                 finishWithError(
                     "file_copy_failed", e.localizedMessage, e.toString(), resultCallback
                 )
+            } catch (e: Error) {
+                Log.e(LOG_TAG, "copyFileToCacheDirOnBackground failed", e)
+                finishWithError(
+                    "file_copy_failed", e.localizedMessage, e.toString(), resultCallback
+                )
             }
         }
         return cachedFilePath
@@ -126,6 +131,7 @@ class Utils {
         withContext(uiScope.coroutineContext) {
             try {
                 Log.d(LOG_TAG, "Launch...")
+
                 Log.d(LOG_TAG, "Copy on background...")
                 val filesPaths: MutableList<String> = mutableListOf()
                 destinationFilesNames.indices.map { index ->
@@ -139,7 +145,12 @@ class Utils {
                 cachedFilesPaths = filesPaths
                 Log.d(LOG_TAG, "...launch")
             } catch (e: Exception) {
-                Log.e(LOG_TAG, "copyFileToCacheDirOnBackground failed", e)
+                Log.e(LOG_TAG, "copyMultipleFilesToCacheDirOnBackground failed", e)
+                finishWithError(
+                    "file_copy_failed", e.localizedMessage, e.toString(), resultCallback
+                )
+            } catch (e: Error) {
+                Log.e(LOG_TAG, "copyMultipleFilesToCacheDirOnBackground failed", e)
                 finishWithError(
                     "file_copy_failed", e.localizedMessage, e.toString(), resultCallback
                 )
@@ -151,14 +162,18 @@ class Utils {
     private fun copyFileToCacheDir(
         context: Context, sourceFileUri: Uri, destinationFileName: String,
     ): String {
-        // Getting destination file on cache directory.
-        val destinationFile = File(context.cacheDir.path, destinationFileName)
+        val cacheFileSuffix = ".${getFileExtension(destinationFileName)}"
+        val cacheFilePrefix = "${destinationFileName.dropLast(cacheFileSuffix.length)}."
 
-        // Deleting existing destination file.
-        if (destinationFile.exists()) {
-            Log.d(LOG_TAG, "Deleting existing destination file '${destinationFile.path}'")
-            destinationFile.delete()
-        }
+        // Getting destination file on cache directory.
+        val destinationFile = File.createTempFile(cacheFilePrefix, cacheFileSuffix)
+//        File(context.cacheDir.path, destinationFileName)
+
+//        // Deleting existing destination file.
+//        if (destinationFile.exists()) {
+//            Log.d(LOG_TAG, "Deleting existing destination file '${destinationFile.path}'")
+//            destinationFile.delete()
+//        }
 
         // Copying file to cache directory.
         Log.d(LOG_TAG, "Copying '$sourceFileUri' to '${destinationFile.path}'")
@@ -206,6 +221,11 @@ class Utils {
                 finishWithError(
                     "save_file_failed", e.localizedMessage, e.toString(), resultCallback
                 )
+            } catch (e: Error) {
+                Log.e(LOG_TAG, "saveFileOnBackground failed", e)
+                finishWithError(
+                    "save_file_failed", e.localizedMessage, e.toString(), resultCallback
+                )
             } finally {
                 if (isTempFile) {
                     Log.d(LOG_TAG, "Deleting temp source file: ${saveFile.path}")
@@ -247,12 +267,17 @@ class Utils {
                 }
                 Log.d(LOG_TAG, "...saved file on background, result: $savedFilesPaths")
             } catch (e: SecurityException) {
-                Log.e(LOG_TAG, "saveFileOnBackground", e)
+                Log.e(LOG_TAG, "saveMultipleFilesOnBackground", e)
                 finishWithError(
                     "security_exception", e.localizedMessage, e.toString(), resultCallback
                 )
             } catch (e: Exception) {
-                Log.e(LOG_TAG, "saveFileOnBackground failed", e)
+                Log.e(LOG_TAG, "saveMultipleFilesOnBackground failed", e)
+                finishWithError(
+                    "save_file_failed", e.localizedMessage, e.toString(), resultCallback
+                )
+            } catch (e: Error) {
+                Log.e(LOG_TAG, "saveMultipleFilesOnBackground failed", e)
                 finishWithError(
                     "save_file_failed", e.localizedMessage, e.toString(), resultCallback
                 )
@@ -293,6 +318,8 @@ class Utils {
     private fun clearPendingResult() {
         filePickingResult = null
         fileSavingResult = null
+        fileMetadataResult = null
+        cacheFilePathFromUriResult = null
     }
 
     fun finishPickingSuccessfully(result: List<String>?, resultCallback: MethodChannel.Result?) {
@@ -305,8 +332,8 @@ class Utils {
         clearPendingResult()
     }
 
-    fun finishWithAlreadyActiveError(result: MethodChannel.Result) {
-        result.error("already_active", "File dialog is already active", null)
+    fun finishWithAlreadyActiveError(result: MethodChannel.Result?) {
+        result?.error("already_active", "File dialog is already active", null)
     }
 
     fun finishSuccessfullyWithListOfString(
@@ -332,7 +359,9 @@ class Utils {
     fun getURI(uri: String): Uri {
         val parsed: Uri = Uri.parse(uri)
         val parsedScheme: String? = parsed.scheme
-        return if ((parsedScheme == null) || parsedScheme.isEmpty()) {
+        return if ((parsedScheme == null) || parsedScheme.isEmpty() || ("${uri[0]}" == "/")) {
+            // Using "${uri[0]}" == "/" in condition above because if uri is an absolute file path without any scheme starting with "/"
+            // and if its filename contains ":" then the parsed scheme will be wrong.
             Uri.fromFile(File(uri))
         } else parsed
     }

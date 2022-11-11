@@ -9,4 +9,4 @@ export 'src/pick_or_save_method_channel.dart'
         FileSaverParams,
         FileMetadataParams,
         FileMetadata,
-        CacheFilePathFromUriParams;
+        CacheFilePathFromPathParams;
