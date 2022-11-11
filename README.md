@@ -10,8 +10,6 @@
 
 A Flutter file picking and saving package that enables you to pick or save a single file and multiple files.
 
-Note: Although .
-
 ## Features
 
 - Works on Android 5.0 (API level 21) or later.
