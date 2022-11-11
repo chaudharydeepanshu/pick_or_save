@@ -1,3 +1,8 @@
+## 2.1.2
+
+* **Breaking:** `copyFileToCacheDir` is replaced with `getCachedFilePath`.
+* Updated documentation.
+
 ## 2.1.1
 
 * **Breaking:** `cacheFilePathFromUri` is replaced with `cacheFilePathFromPath`.

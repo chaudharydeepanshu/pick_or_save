@@ -167,7 +167,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               : () async {
                                   final params = FilePickerParams(
                                     localOnly: _localOnly,
-                                    copyFileToCacheDir: isSelected[1],
+                                    getCachedFilePath: isSelected[1],
                                   );
 
                                   List<String>? result =
@@ -186,7 +186,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               : () async {
                                   final params = FilePickerParams(
                                     localOnly: _localOnly,
-                                    copyFileToCacheDir: isSelected[1],
+                                    getCachedFilePath: isSelected[1],
                                     enableMultipleSelection: true,
                                   );
 
@@ -206,7 +206,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               : () async {
                                   final params = FilePickerParams(
                                       localOnly: _localOnly,
-                                      copyFileToCacheDir: isSelected[1],
+                                      getCachedFilePath: isSelected[1],
                                       enableMultipleSelection: true,
                                       mimeTypesFilter: [
                                         "image/*",
@@ -233,7 +233,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               : () async {
                                   final params = FilePickerParams(
                                     localOnly: _localOnly,
-                                    copyFileToCacheDir: isSelected[1],
+                                    getCachedFilePath: isSelected[1],
                                     enableMultipleSelection: true,
                                     allowedExtensions: [".txt"],
                                   );
@@ -258,7 +258,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               : () async {
                                   final params = FilePickerParams(
                                     localOnly: _localOnly,
-                                    copyFileToCacheDir: isSelected[1],
+                                    getCachedFilePath: isSelected[1],
                                     enableMultipleSelection: true,
                                     allowedExtensions: [
                                       ".png",
@@ -393,7 +393,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               : () async {
                                   final params = FilePickerParams(
                                     localOnly: _localOnly,
-                                    copyFileToCacheDir: isSelected[1],
+                                    getCachedFilePath: isSelected[1],
                                   );
 
                                   _pickedFilePath = await _filePicker(params);
@@ -445,7 +445,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               : () async {
                                   final params = FilePickerParams(
                                     localOnly: _localOnly,
-                                    copyFileToCacheDir: isSelected[1],
+                                    getCachedFilePath: isSelected[1],
                                   );
 
                                   _pickedFilePath = await _filePicker(params);

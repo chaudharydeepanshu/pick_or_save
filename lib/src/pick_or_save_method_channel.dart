@@ -80,7 +80,7 @@ class FilePickerParams {
   ///
   /// If true, [filePicker] returns path to the copied file.
   /// If false, [filePicker] returns uri of original picked file.
-  final bool copyFileToCacheDir;
+  final bool getCachedFilePath;
 
   /// Picker types for (file, photo).
   ///
@@ -99,7 +99,7 @@ class FilePickerParams {
     this.allowedExtensions,
     this.mimeTypesFilter,
     this.localOnly = false,
-    this.copyFileToCacheDir = true,
+    this.getCachedFilePath = true,
     this.pickerType = PickerType.file,
     this.enableMultipleSelection = false,
   }) : assert(
@@ -115,7 +115,7 @@ class FilePickerParams {
           .toList(),
       'mimeTypesFilter': mimeTypesFilter,
       'localOnly': localOnly,
-      'copyFileToCacheDir': copyFileToCacheDir,
+      'getCachedFilePath': getCachedFilePath,
       'pickerType': pickerType.toString(),
       'enableMultipleSelection': enableMultipleSelection,
     };
@@ -125,7 +125,7 @@ class FilePickerParams {
   // when using the print statement.
   @override
   String toString() {
-    return 'FilePickerParams{allowedExtensions: $allowedExtensions, mimeTypesFilter: $mimeTypesFilter, localOnly: $localOnly, copyFileToCacheDir: $copyFileToCacheDir, pickerType: $pickerType, enableMultipleSelection: $enableMultipleSelection}';
+    return 'FilePickerParams{allowedExtensions: $allowedExtensions, mimeTypesFilter: $mimeTypesFilter, localOnly: $localOnly, getCachedFilePath: $getCachedFilePath, pickerType: $pickerType, enableMultipleSelection: $enableMultipleSelection}';
   }
 }
 
