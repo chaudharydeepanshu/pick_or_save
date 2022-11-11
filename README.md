@@ -44,7 +44,7 @@ import 'package:pick_or_save/pick_or_save.dart';
 
 **Note:** To try the demos shown in below gifs run the example included in this plugin.
 
-**Note:** For most below examples we set ```getCachedFilePath = false``` to get uri path instead of absolute file path from picker. A Uri path can only be used in android native code. By default ```copyFileToCacheDir = true``` which will provide cached file path from picker.
+**Note:** For most below examples we set ```getCachedFilePath = false``` to get uri path instead of absolute file path from picker. A Uri path can only be used in android native code. By default ```getCachedFilePath = true``` which will provide cached file path from picker.
 
 ### Picking
 
