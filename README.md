@@ -17,6 +17,8 @@ Note: Although this package supports picking and caching files by default to wor
 - Filter extensions when picking a document.
 - Could limit picking a file from the local device only.
 
+**Note:** If you are getting errors after updating the package to newer version and the error contains workds like Redeclaration, Conflicting declarations, Overload resolution ambiguity then to fix them you probably need to remove the older version of plugin from cache `C:\Users\username\AppData\Local\Pub\Cache\hosted\pub.dev\older_version` or simply run `flutter clean`.
+
 ## Getting started
 
 - In pubspec.yaml, add this dependency:
@@ -110,7 +112,15 @@ List<String>? result = await PickOrSave().fileSaver(
 ### File Metadata
 
 ```dart
-FileMetadata result = await PickOrSave().fileMetaData(
-  params: FileMetadataParams(sourceFileUri: fileUri),
+FileMetadata? result = await PickOrSave().fileMetaData(
+  params: FileMetadataParams(filePath: filePath),
+);
+```
+
+### Get cache file path from file Uri or absolute file path
+
+```dart
+String? result = await PickOrSave().cacheFilePathFromPath(
+  params: CacheFilePathFromPathParams(filePath: filePath),
 );
 ```
