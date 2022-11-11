@@ -35,7 +35,7 @@ abstract class PickOrSavePlatform extends PlatformInterface {
     throw UnimplementedError('fileMetaData() has not been implemented.');
   }
 
-  Future<String?> cacheFilePathFromUri({CacheFilePathFromPathParams? params}) {
+  Future<String?> cacheFilePathFromPath({CacheFilePathFromPathParams? params}) {
     throw UnimplementedError(
         'cacheFilePathFromUri() has not been implemented.');
   }

@@ -174,7 +174,6 @@ class PickOrSave(
                 )
             } else if (saveFiles.size == 1) {
                 saveSingleFile(
-                    resultCallback = filePickingResult,
                     saveFileInfo = saveFiles.first(),
                     mimeTypesFilter = mimeTypesFilter,
                     localOnly = localOnly,
@@ -182,7 +181,6 @@ class PickOrSave(
                 )
             } else {
                 saveMultipleFiles(
-                    resultCallback = filePickingResult,
                     saveFilesInfo = saveFiles,
                     mimeTypesFilter = mimeTypesFilter,
                     localOnly = localOnly,

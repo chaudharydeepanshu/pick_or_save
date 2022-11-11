@@ -99,11 +99,11 @@ class _MyHomePageState extends State<MyHomePage> {
     return result;
   }
 
-  Future<String?> _cacheFilePathFromUri(
+  Future<String?> _cacheFilePathFromPath(
       CacheFilePathFromPathParams params) async {
     String? result;
     try {
-      result = await _pickOrSavePlugin.cacheFilePathFromUri(params: params);
+      result = await _pickOrSavePlugin.cacheFilePathFromPath(params: params);
       log(result.toString());
     } on PlatformException catch (e) {
       log(e.toString());
@@ -260,7 +260,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                     localOnly: _localOnly,
                                     copyFileToCacheDir: isSelected[1],
                                     enableMultipleSelection: true,
-                                    allowedExtensions: [".png"],
+                                    allowedExtensions: [
+                                      ".png",
+                                      ".jpg",
+                                      ".jpeg"
+                                    ],
                                     mimeTypesFilter: ["*/*"],
                                     pickerType: PickerType.photo,
                                   );
@@ -464,7 +468,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       );
 
                                       String? result =
-                                          await _cacheFilePathFromUri(params);
+                                          await _cacheFilePathFromPath(params);
 
                                       callSnackBar(
                                           mounted: mounted,

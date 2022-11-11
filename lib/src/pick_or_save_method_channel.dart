@@ -39,10 +39,10 @@ class MethodChannelPickOrSave extends PickOrSavePlatform {
   }
 
   @override
-  Future<String?> cacheFilePathFromUri(
+  Future<String?> cacheFilePathFromPath(
       {CacheFilePathFromPathParams? params}) async {
     final String? result = await methodChannel.invokeMethod<String?>(
-        'cacheFilePathFromUri', params?.toJson());
+        'cacheFilePathFromPath', params?.toJson());
     return result;
   }
 
@@ -253,12 +253,12 @@ class FileMetadata {
   }
 }
 
-/// Parameters for the [cacheFilePathFromUri] method.
+/// Parameters for the [cacheFilePathFromPath] method.
 class CacheFilePathFromPathParams {
   /// Path of the file.
   final String filePath;
 
-  /// Create parameters for the [cacheFilePathFromUri] method.
+  /// Create parameters for the [cacheFilePathFromPath] method.
   const CacheFilePathFromPathParams({
     required this.filePath,
   });

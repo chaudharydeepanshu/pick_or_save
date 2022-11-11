@@ -5,7 +5,6 @@ import android.content.Intent
 import android.util.Log
 import android.webkit.MimeTypeMap
 import com.deepanshuchaudhary.pick_or_save.PickOrSavePlugin.Companion.LOG_TAG
-import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -50,13 +49,11 @@ data class SaveFileInfo(val filePath: String?, val fileData: ByteArray?, val fil
 
 // For saving single file.
 fun saveSingleFile(
-    resultCallback: MethodChannel.Result?,
     saveFileInfo: SaveFileInfo,
     mimeTypesFilter: List<String>?,
     localOnly: Boolean,
     context: Activity,
 ) {
-
     val utils = Utils()
 
     val begin = System.nanoTime()
@@ -72,7 +69,10 @@ fun saveSingleFile(
         saveFile = File(saveFileInfo.filePath)
         if (!saveFile.exists()) {
             utils.finishWithError(
-                "saveFile_not_found", "Save file is missing", saveFileInfo.filePath, resultCallback
+                "saveFile_not_found",
+                "Save file is missing",
+                saveFileInfo.filePath,
+                fileSavingResult
             )
             return
         }
@@ -128,25 +128,12 @@ fun saveSingleFile(
 
 // For saving multiple file.
 fun saveMultipleFiles(
-    resultCallback: MethodChannel.Result?,
     saveFilesInfo: List<SaveFileInfo>,
     mimeTypesFilter: List<String>?,
     localOnly: Boolean,
     context: Activity,
 ) {
-
     val utils = Utils()
-
-    if (filePickingResult != null) {
-        utils.finishWithAlreadyActiveError(resultCallback)
-        return
-    } else if (fileSavingResult != null) {
-        utils.finishWithAlreadyActiveError(resultCallback)
-        return
-    } else {
-        fileSavingResult = resultCallback
-//        utils.cancelSaving()
-    }
 
     val begin = System.nanoTime()
 

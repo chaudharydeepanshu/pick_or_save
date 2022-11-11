@@ -142,7 +142,7 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             "fileMetaData" -> pickOrSave!!.fileMetaData(
                 result, sourceFilePathOrUri = call.argument("filePath")
             )
-            "cacheFilePathFromUri" -> pickOrSave!!.cacheFilePath(
+            "cacheFilePathFromPath" -> pickOrSave!!.cacheFilePath(
                 result,
                 sourceFilePathOrUri = call.argument("filePath"),
             )

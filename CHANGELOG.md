@@ -1,3 +1,8 @@
+## 2.1.1
+
+* **Breaking:** `cacheFilePathFromUri` is replaced with `cacheFilePathFromPath`.
+* Fixed unable to save multiple due to the changes in 2.0.1.
+
 ## 2.0.1
 
 * **Breaking:** `FileMetadataParams` now only takes `filePath` which can take both absolute file path or Uri so I removed `sourceFilePath` and `sourceFileUri`.
