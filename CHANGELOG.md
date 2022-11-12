@@ -1,3 +1,7 @@
+## 2.1.4
+
+* Fixed the issue of unintentionally clearing other tasks results in the plugin when one tasks finishes in the plugin.
+
 ## 2.1.3
 
 * Updated documentation.

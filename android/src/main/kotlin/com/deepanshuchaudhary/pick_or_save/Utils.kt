@@ -315,21 +315,33 @@ class Utils {
         Log.d(LOG_TAG, "Canceled File Saving")
     }
 
-    private fun clearPendingResult() {
-        filePickingResult = null
-        fileSavingResult = null
-        fileMetadataResult = null
-        cacheFilePathFromUriResult = null
+    private fun clearPendingResult(resultCallback: MethodChannel.Result?) {
+        if (resultCallback == filePickingResult && filePickingResult != null) {
+            filePickingResult = null
+            println("filePicking result cleared")
+        }
+        if (resultCallback == fileSavingResult && fileSavingResult != null) {
+            fileSavingResult = null
+            println("fileSaving result cleared")
+        }
+        if (resultCallback == fileMetadataResult && fileMetadataResult != null) {
+            fileMetadataResult = null
+            println("fileMetadata result cleared")
+        }
+        if (resultCallback == cacheFilePathFromUriResult && cacheFilePathFromUriResult != null) {
+            cacheFilePathFromUriResult = null
+            println("cacheFilePathFromUri result cleared")
+        }
     }
 
     fun finishPickingSuccessfully(result: List<String>?, resultCallback: MethodChannel.Result?) {
         resultCallback?.success(result)
-        clearPendingResult()
+        clearPendingResult(resultCallback)
     }
 
     fun finishSavingSuccessfully(result: List<String>?, resultCallback: MethodChannel.Result?) {
         resultCallback?.success(result)
-        clearPendingResult()
+        clearPendingResult(resultCallback)
     }
 
     fun finishWithAlreadyActiveError(result: MethodChannel.Result?) {
@@ -340,10 +352,12 @@ class Utils {
         result: List<String>?, resultCallback: MethodChannel.Result?
     ) {
         resultCallback?.success(result)
+        clearPendingResult(resultCallback)
     }
 
     fun finishSuccessfullyWithString(result: String?, resultCallback: MethodChannel.Result?) {
         resultCallback?.success(result)
+        clearPendingResult(resultCallback)
     }
 
     fun finishWithError(
@@ -353,7 +367,7 @@ class Utils {
         resultCallback: MethodChannel.Result?
     ) {
         resultCallback?.error(errorCode, errorMessage, errorDetails)
-        clearPendingResult()
+        clearPendingResult(resultCallback)
     }
 
     fun getURI(uri: String): Uri {
