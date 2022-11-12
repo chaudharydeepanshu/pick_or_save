@@ -54,7 +54,7 @@ import 'package:pick_or_save/pick_or_save.dart';
 
 ```dart
 List<String>? result = await PickOrSave().filePicker(
-params: FilePickerParams(getCachedFilePath = false),
+  params: FilePickerParams(getCachedFilePath = false),
 );
 String filePath = result[0];
 ```
@@ -63,7 +63,7 @@ String filePath = result[0];
 
 ```dart
 List<String>? result = await PickOrSave().filePicker(
-params: FilePickerParams(getCachedFilePath = true),
+  params: FilePickerParams(getCachedFilePath = true),
 );
 String filePath = result[0];
 ```
@@ -103,7 +103,7 @@ String getRealName(String pickOrSaveCachedFileName) {
 
 ```dart
 List<String>? filesPaths = await PickOrSave().filePicker(
-params: FilePickerParams(getCachedFilePath = false, enableMultipleSelection: true),
+  params: FilePickerParams(getCachedFilePath = false, enableMultipleSelection: true),
 );
 ```
 
@@ -111,7 +111,7 @@ params: FilePickerParams(getCachedFilePath = false, enableMultipleSelection: tru
 
 ```dart
 List<String>? filesPaths = await PickOrSave().filePicker(
-params: FilePickerParams(getCachedFilePath = false, mimeTypesFilter: ["image/*", "application/pdf"]),
+  params: FilePickerParams(getCachedFilePath = false, mimeTypesFilter: ["image/*", "application/pdf"]),
 );
 ```
 
@@ -119,7 +119,7 @@ params: FilePickerParams(getCachedFilePath = false, mimeTypesFilter: ["image/*",
 
 ```dart
 List<String>? filesPaths = await PickOrSave().filePicker(
-params: FilePickerParams(getCachedFilePath = false, allowedExtensions: [".txt", ".png"]),
+  params: FilePickerParams(getCachedFilePath = false, allowedExtensions: [".txt", ".png"]),
 );
 ```
 
@@ -129,7 +129,7 @@ params: FilePickerParams(getCachedFilePath = false, allowedExtensions: [".txt", 
 
 ```dart
 List<String>? filesPaths = await PickOrSave().filePicker(
-params: FilePickerParams(getCachedFilePath = false, pickerType: PickerType.photo, mimeTypesFilter: ["*/*"]),
+  params: FilePickerParams(getCachedFilePath = false, pickerType: PickerType.photo, mimeTypesFilter: ["*/*"]),
 );
 ```
 
@@ -145,13 +145,13 @@ params: FilePickerParams(getCachedFilePath = false, pickerType: PickerType.photo
 
 ```dart
 List<String>? result = await PickOrSave().fileSaver(
-params: FileSaverParams(
-saveFiles: [
-SaveFileInfo(
-filePath: filePath,
-fileName: "File.png")
-],
-)
+  params: FileSaverParams(
+    saveFiles: [
+      SaveFileInfo(
+          filePath: filePath,
+          fileName: "File.png")
+    ],
+  )
 );
 String savedFilePath = result[0];
 ```
@@ -160,16 +160,16 @@ String savedFilePath = result[0];
 
 ```dart
 List<String>? result = await PickOrSave().fileSaver(
-params: FileSaverParams(
-saveFiles: [
-SaveFileInfo(
-filePath: filePath,
-fileName: "File 1.png"),
-SaveFileInfo(
-filePath: filePath,
-fileName: "File 2.png")
-],
-)
+  params: FileSaverParams(
+    saveFiles: [
+      SaveFileInfo(
+          filePath: filePath,
+          fileName: "File 1.png"),
+      SaveFileInfo(
+          filePath: filePath,
+          fileName: "File 2.png")
+    ],
+  )
 );
 ```
 
@@ -177,16 +177,16 @@ fileName: "File 2.png")
 
 ```dart
 List<String>? result = await PickOrSave().fileSaver(
-params: FileSaverParams(
-saveFiles: [
-SaveFileInfo(
-fileData: uint8List,
-fileName: "File 1.png"),
-SaveFileInfo(
-fileData: uint8List,
-fileName: "File 2.png")
-],
-)
+  params: FileSaverParams(
+    saveFiles: [
+      SaveFileInfo(
+          fileData: uint8List,
+          fileName: "File 1.png"),
+      SaveFileInfo(
+          fileData: uint8List,
+          fileName: "File 2.png")
+    ],
+  )
 );
 ```
 
@@ -198,7 +198,7 @@ fileName: "File 2.png")
 
 ```dart
 FileMetadata? result = await PickOrSave().fileMetaData(
-params: FileMetadataParams(filePath: filePath),
+  params: FileMetadataParams(filePath: filePath),
 );
 ```
 
@@ -210,7 +210,7 @@ params: FileMetadataParams(filePath: filePath),
 
 ```dart
 String? result = await PickOrSave().cacheFilePathFromPath(
-params: CacheFilePathFromPathParams(filePath: filePath),
+  params: CacheFilePathFromPathParams(filePath: filePath),
 );
 ```
 
