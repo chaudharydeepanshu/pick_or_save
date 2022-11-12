@@ -157,7 +157,7 @@ fun processPickedFiles(
         val begin = System.nanoTime()
 
         if (resultCode == Activity.RESULT_OK && data?.data != null) {
-            val sourceFileUri = data.data
+            val sourceFileUri = data.data!!
             Log.d(LOG_TAG, "Picked file: $sourceFileUri")
             val destinationFileName = utils.getFileNameFromPickedDocumentUri(sourceFileUri, context)
             if ((destinationFileName != null) && utils.validateFileExtension(
@@ -167,7 +167,7 @@ fun processPickedFiles(
                 if (copyPickedFileToCacheDir) {
                     val cachedFilePath: String? = utils.copyFileToCacheDirOnBackground(
                         context = context,
-                        sourceFileUri = sourceFileUri!!,
+                        sourceFileUri = sourceFileUri,
                         destinationFileName = destinationFileName,
                         resultCallback = filePickingResult,
                     )
@@ -185,7 +185,7 @@ fun processPickedFiles(
                     }
                 } else {
                     utils.finishPickingSuccessfully(
-                        listOf(sourceFileUri!!.toString()), filePickingResult
+                        listOf(sourceFileUri.toString()), filePickingResult
                     )
                 }
             } else {
