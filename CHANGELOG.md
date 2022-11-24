@@ -1,4 +1,4 @@
-## 2.2.1
+## 2.2.2
 
 * Added support for picking directories with persistent permission and return its uri.
 * Added support to optionally transverse through all subdirectories in a picked directory and return their uris.
