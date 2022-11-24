@@ -139,6 +139,20 @@ List<String>? filesPaths = await PickOrSave().filePicker(
 | :-----: | :---: |
 | <img src="https://user-images.githubusercontent.com/85361211/201423620-e5349867-1e40-400e-a032-9c51a290ecb7.gif"></img> | <img src="https://user-images.githubusercontent.com/85361211/201423773-e1b6f1a3-ae03-410d-9b61-81c43e2e1c04.gif"></img> |
 
+#### Picking Directory
+
+```dart
+String? pickedDirectoryUri = await PickOrSave().directoryPicker(
+  params: DirectoryPickerParams()
+);
+```
+
+The obtained uri will have persistent permissions with these flags: Intent.FLAG_GRANT_READ_URI_PERMISSION, Intent.FLAG_GRANT_WRITE_URI_PERMISSION. In short it preserves access to uri across device restarts. You can learn more about it [here](https://developer.android.com/training/data-storage/shared/documents-files#persist-permissions).
+
+**Note:** In `DirectoryPickerParams()` you can also optionally provide `initialDirectoryUri` which will be used to start the directory picker from a speific location. Generally we give it the uri which we stored from previous directory pickings.
+
+Also, For transversing the picked directory, releasing-checking persistent permissions for a uri then go [here](#operations-on-picked-directory-uri).
+
 ### Saving
 
 #### Saving single file from file path
@@ -217,3 +231,74 @@ String? result = await PickOrSave().cacheFilePathFromPath(
 | Picking file and get its cached file path |
 | :-------------: |
 | <img src="https://user-images.githubusercontent.com/85361211/201424906-dd07fd11-48a4-4cd1-a833-20e75f26abab.gif"></img> |
+
+### Operations on picked directory uri
+
+#### Get uris of documents or sub documents inside a picked directory
+
+```dart
+List<DocumentFile>? documentFiles = await PickOrSave().directoryDocumentsPicker(
+  params: DirectoryDocumentsPickerParams(
+    directoryUri: pickedDirectoryUri,
+    recurseDirectories: false,
+    allowedExtensions: [".pdf"],
+    mimeTypesFilter: ["image/*"],
+  ),
+);
+
+DocumentFile documentFile = documentFiles[0];
+String documentId = documentFile.id;
+String documentUri = documentFile.uri;
+String? documentMimeType = documentFile.mimeType;
+String documentName = documentFile.name;
+bool isDocumentDirectory = documentFile.isDirectory;
+bool isDocumentFile = documentFile.isFile;
+```
+
+`DirectoryDocumentsPickerParams` can take these parameters:
+- Provide `directoryUri` the picked directory uri or uri of documents(sub directory) inside picked directory obtained from previous runs.
+- Provide `documentId` the id of documents(sub directory) inside picked directory obtained from previous runs. This is important if you want to start tansversing from a sub directory instead of root directory.
+- Set `recurseDirectories` to true if you want to transverse inside sub directories of provided directory. This is recursive.
+- Provide `allowedExtensions` to filter the returned documents to certain file extensions. It has no effect on performance.
+- Provide `mimeTypesFilter` to filter the returned documents to certain mime types. It has no effect on performance.
+
+#### Cancelling transvering a picked directory
+
+```dart
+String? result = await PickOrSave().cancelActions(
+  params: CancelActionsParams(cancelType: CancelType.directoryDocumentsPicker),
+);
+```
+
+#### Cancelling transvering a picked directory
+
+```dart
+String? result = await PickOrSave().cancelActions(
+  params: CancelActionsParams(cancelType: CancelType.directoryDocumentsPicker),
+);
+```
+
+#### Check if a uri has persistent permission
+
+```dart
+bool? persistentPermStatus = await PickOrSave().uriPermissionStatus(
+  params: UriPermissionStatusParams(uri: uriToCheck, releasePermission: false),
+);
+```
+
+#### Get all uri which have persistent permission
+
+```dart
+List<String>? persistentPermUris = await PickOrSave().urisWithPersistedPermission();
+```
+
+#### Remove or relase persistent permission for a uri
+
+```dart
+bool? persistentPermStatus = await PickOrSave().uriPermissionStatus(
+  params: UriPermissionStatusParams(uri: uriToRelease, releasePermission: true),
+);
+```
+
+**Note:** It is very important to remove unused persited uris as android tracks uri permissions individual apps for setting a hardcoded limit to it. Till Android 10 the limit is set to 128 persisted permission grants and from Android 11 that limit updated to 512. So, if we reach that limit then future requests will get failed.
+For more details follow the nice article [here](https://web.archive.org/web/20221124205757/https://commonsware.com/blog/2020/06/13/count-your-saf-uri-permission-grants.html).
