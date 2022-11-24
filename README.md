@@ -15,7 +15,7 @@ A Flutter file picking and saving package that enables you to pick or save a sin
 - Works on Android 5.0 (API level 21) or later.
 - Pick single file, multiple files with certain extensions or mime types.
 - Supports photo picker on supported devices.
-- Supports picking directory with persistent permission and transversing the picked directory documents.
+- Supports picking directory with persistent permission and traversing the picked directory documents.
 - Get meta data like name, size and last modified from from android uri or file path.
 - Saves single file while allowing user to choose location and name.
 - Saves multiple file while allowing user to choose location or directory for saving all files.
@@ -152,7 +152,7 @@ The obtained uri will have persistent permissions with these flags: Intent.FLAG_
 
 **Note:** In `DirectoryPickerParams()` you can also optionally provide `initialDirectoryUri` which will be used to start the directory picker from a speific location. Generally we give it the uri which we stored from previous directory pickings.
 
-Also, For transversing the picked directory, releasing-checking persistent permissions for a uri then go [here](#operations-on-picked-directory-uri).
+Also, For traversing the picked directory, releasing-checking persistent permissions for a uri then go [here](#operations-on-picked-directory-uri).
 
 ### Saving
 
@@ -258,12 +258,12 @@ bool isDocumentFile = documentFile.isFile;
 
 `DirectoryDocumentsPickerParams` can take these parameters:
 - Provide `directoryUri` the picked directory uri or uri of documents(sub directory) inside picked directory obtained from previous runs.
-- Provide `documentId` the id of documents(sub directory) inside picked directory obtained from previous runs. This is important if you want to start tansversing from a sub directory instead of root directory.
-- Set `recurseDirectories` to true if you want to transverse inside sub directories of provided directory. This is recursive.
+- Provide `documentId` the id of documents(sub directory) inside picked directory obtained from previous runs. This is important if you want to start traversing from a sub directory instead of root directory.
+- Set `recurseDirectories` to true if you want to traverse inside sub directories of provided directory. This is recursive.
 - Provide `allowedExtensions` to filter the returned documents to certain file extensions. It has no effect on performance.
 - Provide `mimeTypesFilter` to filter the returned documents to certain mime types. It has no effect on performance.
 
-#### Cancelling transvering a picked directory
+#### Cancelling traversing a picked directory
 
 ```dart
 String? result = await PickOrSave().cancelActions(
@@ -271,7 +271,7 @@ String? result = await PickOrSave().cancelActions(
 );
 ```
 
-#### Cancelling transvering a picked directory
+#### Cancelling traversing a picked directory
 
 ```dart
 String? result = await PickOrSave().cancelActions(
