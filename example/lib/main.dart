@@ -621,7 +621,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   }
                                 }),
                       Text(
-                        "Note - This displays all documents contained under that directory. This will not transverse into sub directories.",
+                        "Note - This displays all documents contained under that directory. This will not traverse into sub directories.",
                         style: Theme.of(context).textTheme.labelSmall,
                       ),
                       const Divider(),
@@ -654,7 +654,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   }
                                 }),
                       Text(
-                        "Note - This displays all pdf documents contained under that directory. This will transverse into sub directories.",
+                        "Note - This displays all pdf documents contained under that directory. This will traverse into sub directories.",
                         style: Theme.of(context).textTheme.labelSmall,
                       ),
                     ],
