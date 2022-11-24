@@ -16,7 +16,13 @@ private const val LOG_TAG = "PickOrSave"
 // For deciding what type of picker to open.
 enum class PickerType { File, Photo }
 
+enum class CancelType {
+    FilesSaving, DirectoryDocumentsPicker
+}
+
 var filePickingResult: MethodChannel.Result? = null
+
+var directoryDocumentsPickingResult: MethodChannel.Result? = null
 
 var fileSavingResult: MethodChannel.Result? = null
 
@@ -29,6 +35,84 @@ class PickOrSave(
 ) : PluginRegistry.ActivityResultListener {
 
     private val utils = Utils()
+
+    // For picking files under a directory.
+    fun pickDirectoryDocuments(
+        resultCallback: MethodChannel.Result,
+        documentId: String?,
+        directoryUri: String?,
+        recurseDirectories: Boolean?,
+        allowedExtensions: List<String>,
+        mimeTypesFilter: List<String>,
+    ) {
+        try {
+            Log.d(
+                LOG_TAG,
+                "pickFile - IN, documentId=$documentId, directoryUri=$directoryUri, recurseDirectories=$recurseDirectories, allowedExtensions=$allowedExtensions, mimeTypesFilter=$mimeTypesFilter"
+            )
+
+            directoryDocumentsPickingResult = resultCallback
+
+            pickDocumentsFromDirectoryUri(
+                documentId = documentId,
+                directoryUri = directoryUri!!,
+                recurseDirectories = recurseDirectories!!,
+                context = activity,
+                allowedExtensions = allowedExtensions,
+                mimeTypesFilter = mimeTypesFilter
+            )
+
+        } catch (e: Exception) {
+            utils.finishWithError(
+                "pickDirectoryDocuments_exception",
+                e.stackTraceToString(),
+                null,
+                directoryDocumentsPickingResult
+            )
+        } catch (e: Error) {
+            utils.finishWithError(
+                "pickDirectoryDocuments_error",
+                e.stackTraceToString(),
+                null,
+                directoryDocumentsPickingResult
+            )
+        }
+    }
+
+    // For picking directory.
+    fun pickDirectory(
+        resultCallback: MethodChannel.Result,
+        initialDirectoryUri: String?,
+    ) {
+        try {
+            Log.d(
+                LOG_TAG, "pickFile - IN, initialDirectoryUri=$initialDirectoryUri"
+            )
+
+            if (filePickingResult != null) {
+                utils.finishWithAlreadyActiveError(resultCallback)
+                return
+            } else if (fileSavingResult != null) {
+                utils.finishWithAlreadyActiveError(resultCallback)
+                return
+            } else {
+                filePickingResult = resultCallback
+            }
+
+            pickSingleDirectory(
+                initialDirectoryUri = initialDirectoryUri, context = activity
+            )
+
+        } catch (e: Exception) {
+            utils.finishWithError(
+                "pickDirectory_exception", e.stackTraceToString(), null, filePickingResult
+            )
+        } catch (e: Error) {
+            utils.finishWithError(
+                "pickDirectory_error", e.stackTraceToString(), null, filePickingResult
+            )
+        }
+    }
 
     // For picking single file or multiple files.
     fun pickFile(
@@ -255,7 +339,7 @@ class PickOrSave(
                     resultCallback = cacheFilePathFromUriResult
                 )
 
-                utils.finishSuccessfullyWithString(result, cacheFilePathFromUriResult)
+                utils.finishSuccessfully(result, cacheFilePathFromUriResult)
 
                 Log.d(LOG_TAG, "cacheFileFromUri - OUT")
 
@@ -282,21 +366,98 @@ class PickOrSave(
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
 
         return when (requestCode) {
-            utils.REQUEST_CODE_PICK_FILE -> {
-                processPickedFiles(resultCode = resultCode, data = data, context = activity)
+            utils.REQUEST_CODE_ACTION_OPEN_DOCUMENT -> {
+                processActionOpenDocument(resultCode = resultCode, data = data, context = activity)
             }
-            utils.REQUEST_CODE_SAVE_FILE -> {
-                processSingleSaveFile(resultCode = resultCode, data = data, context = activity)
+            utils.REQUEST_CODE_ACTION_CREATE_DOCUMENT -> {
+                processActionCreateDocument(
+                    resultCode = resultCode, data = data, context = activity
+                )
             }
-            utils.REQUEST_CODE_SAVE_MULTIPLE_FILES -> {
-                processMultipleSaveFile(resultCode = resultCode, data = data, context = activity)
+            utils.REQUEST_CODE_ACTION_OPEN_DOCUMENT_TREE -> {
+                processActionOpenDocumentTree(
+                    resultCode = resultCode, data = data, context = activity
+                )
             }
             else -> false
         }
     }
 
-    fun cancelFilesSaving(
+    fun cancelActions(
+        cancelType: CancelType?,
     ) {
-        utils.cancelSaving()
+        Log.d(
+            LOG_TAG, "cancelActions - IN, cancelType=$cancelType"
+        )
+
+        if (cancelType == CancelType.FilesSaving) {
+            utils.cancelSaving()
+        } else if (cancelType == CancelType.DirectoryDocumentsPicker) {
+            utils.cancelDirectoryDocumentsPicker()
+        }
+    }
+
+    fun uriPermissionStatus(
+        resultCallback: MethodChannel.Result, uri: String?, releasePermission: Boolean?
+    ) {
+        Log.d(
+            LOG_TAG, "uriPermissionStatus - IN, uri=$uri, releasePermission:$releasePermission"
+        )
+
+        var isPermissionGranted = false
+
+        val contentResolver = activity.contentResolver
+
+        val flags: Int =
+            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+
+        val grantedUris = mutableListOf<String>()
+
+        // list of all persisted permissions for our app
+        val list = contentResolver.persistedUriPermissions
+        for (i in list.indices) {
+            val persistedUriString = list[i].uri.toString()
+
+            if (list[i].isWritePermission && list[i].isReadPermission) {
+                grantedUris.add(persistedUriString)
+            }
+        }
+
+        if (releasePermission!! && grantedUris.contains(uri)) {
+            contentResolver.releasePersistableUriPermission(utils.getURI(uri!!), flags)
+            grantedUris.remove(uri)
+        }
+
+        if (grantedUris.contains(uri)) {
+            isPermissionGranted = true
+        }
+
+        utils.finishSuccessfully(isPermissionGranted, resultCallback)
+
+        Log.d(LOG_TAG, "uriPermissionStatus - OUT")
+    }
+
+    fun urisWithPersistedPermission(resultCallback: MethodChannel.Result) {
+        Log.d(
+            LOG_TAG, "urisWithPersistedPermission - IN"
+        )
+
+        val contentResolver = activity.contentResolver
+
+        val grantedUris = mutableListOf<String>()
+
+        // list of all persisted permissions for our app
+        val list = contentResolver.persistedUriPermissions
+        for (i in list.indices) {
+            val persistedUriString = list[i].uri.toString()
+
+            if (list[i].isWritePermission && list[i].isReadPermission) {
+                grantedUris.add(persistedUriString)
+            }
+        }
+        utils.finishSuccessfully(grantedUris, resultCallback)
+
+        Log.d(LOG_TAG, "urisWithPersistedPermission - OUT")
     }
 }
+

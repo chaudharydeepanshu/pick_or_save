@@ -10,6 +10,37 @@ class MethodChannelPickOrSave extends PickOrSavePlatform {
   final methodChannel = const MethodChannel('pick_or_save');
 
   @override
+  Future<String?> directoryPicker({DirectoryPickerParams? params}) async {
+    final List? picked = await methodChannel.invokeMethod<List?>(
+        'pickDirectory', params?.toJson());
+    return picked?.cast<String>().first;
+  }
+
+  @override
+  Future<List<DocumentFile>?> directoryDocumentsPicker(
+      {DirectoryDocumentsPickerParams? params}) async {
+    final List? pickedFiles = await methodChannel.invokeMethod<List?>(
+        'directoryDocumentsPicker', params?.toJson());
+    List<DocumentFile>? directoryFiles;
+    if (pickedFiles != null) {
+      directoryFiles = [];
+    }
+    pickedFiles?.forEach((pickedFile) {
+      directoryFiles?.add(
+        DocumentFile(
+          id: pickedFile[0] as String,
+          uri: pickedFile[1] as String,
+          type: pickedFile[2] as String?,
+          name: pickedFile[3] as String,
+          isDirectory: pickedFile[4] as bool,
+          isFile: pickedFile[5] as bool,
+        ),
+      );
+    });
+    return directoryFiles?.cast<DocumentFile>();
+  }
+
+  @override
   Future<List<String>?> filePicker({FilePickerParams? params}) async {
     final List? picked =
         await methodChannel.invokeMethod<List?>('pickFiles', params?.toJson());
@@ -47,10 +78,174 @@ class MethodChannelPickOrSave extends PickOrSavePlatform {
   }
 
   @override
-  Future<String?> cancelFilesSaving() async {
-    final String? result =
-        await methodChannel.invokeMethod<String?>('cancelFilesSaving');
+  Future<bool?> uriPermissionStatus({UriPermissionStatusParams? params}) async {
+    final bool? result = await methodChannel.invokeMethod<bool?>(
+        'uriPermissionStatus', params?.toJson());
     return result;
+  }
+
+  @override
+  Future<List<String>?> urisWithPersistedPermission() async {
+    final List? result =
+        await methodChannel.invokeMethod<List?>('urisWithPersistedPermission');
+    return result?.cast<String>();
+  }
+
+  @override
+  Future<String?> cancelActions({CancelActionsParams? params}) async {
+    final String? result = await methodChannel.invokeMethod<String?>(
+        'cancelActions', params?.toJson());
+    return result;
+  }
+}
+
+/// Parameters for the [uriPermissionStatus] method.
+class UriPermissionStatusParams {
+  /// Provide permission status of a uri.
+  final String uri;
+
+  /// Set true to release.
+  final bool releasePermission;
+
+  /// Create parameters for the [uriPermissionStatus] method.
+  const UriPermissionStatusParams(
+      {required this.uri, this.releasePermission = false});
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'uri': uri,
+      'releasePermission': releasePermission
+    };
+  }
+
+  // Implement toString to make it easier to see information
+  // when using the print statement.
+  @override
+  String toString() {
+    return 'PermissionStatusParams{uri: $uri}';
+  }
+}
+
+/// Parameters for the [directoryPicker] method.
+class DirectoryPickerParams {
+  /// Provide initial directory uri if you have one from previous calls.
+  ///
+  /// If provided, opens this uri location on opening picker.
+  final String? initialDirectoryUri;
+
+  /// Create parameters for the [directoryPicker] method.
+  const DirectoryPickerParams({this.initialDirectoryUri});
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{'initialDirectoryUri': initialDirectoryUri};
+  }
+
+  // Implement toString to make it easier to see information
+  // when using the print statement.
+  @override
+  String toString() {
+    return 'DirectoryPickerParams{initialDirectoryUri: $initialDirectoryUri}';
+  }
+}
+
+enum CancelType { filesSaving, directoryDocumentsPicker }
+
+/// Parameters for the [cancelActions] method.
+class CancelActionsParams {
+  /// Provide which action you want to cancel.
+  final CancelType cancelType;
+
+  /// Create parameters for the [cancelActions] method.
+  const CancelActionsParams({required this.cancelType});
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{'cancelType': cancelType.toString()};
+  }
+
+  // Implement toString to make it easier to see information
+  // when using the print statement.
+  @override
+  String toString() {
+    return 'CancelActionsParams{cancelType: $cancelType}';
+  }
+}
+
+class DocumentFile {
+  final String id;
+  final String uri;
+  final String? type;
+  final String name;
+  final bool isDirectory;
+  final bool isFile;
+
+  DocumentFile({
+    required this.id,
+    required this.uri,
+    required this.type,
+    required this.name,
+    required this.isDirectory,
+    required this.isFile,
+  });
+
+  // Implement toString to make it easier to see information
+  // when using the print statement.
+  @override
+  String toString() {
+    return 'DocumentFile{id: $id, uri: $uri, type: $type, name: $name, isDirectory: $isDirectory, isFile: $isFile}';
+  }
+}
+
+/// Parameters for the [directoryDocumentsPicker] method.
+class DirectoryDocumentsPickerParams {
+  /// DocumentID is useful if you have saved the DocumentFile object from previous run
+  /// for a specific Document and now you want to fetch files under that Document only
+  /// without going through all the files of the before.
+  ///
+  /// To properly use it you need to save uri and id from DocumentFile object that you obtained from
+  /// previous run. And then provide the uri as directoryUri and id as documentId to DirectoryDocumentsPickerParams.
+  final String? documentId;
+
+  /// Provide uri of directory of which you want sub documents uris.
+  final String directoryUri;
+
+  /// Optionally recurse into sub-directories.
+  ///
+  /// If true then it will provide uri of all sub documents in subdirectories.
+  final bool recurseDirectories;
+
+  /// Provide allowed extensions (null or empty allows all extensions).
+  ///
+  /// If provided, returns DocumentFile for only allowed file extensions.
+  final List<String>? allowedExtensions;
+
+  /// Filter MIME types.
+  final List<String>? mimeTypesFilter;
+
+  /// Create parameters for the [directoryDocumentsPicker] method.
+  const DirectoryDocumentsPickerParams(
+      {this.documentId,
+      required this.directoryUri,
+      this.recurseDirectories = false,
+      this.allowedExtensions,
+      this.mimeTypesFilter});
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'documentId': documentId,
+      'directoryUri': directoryUri,
+      "recurseDirectories": recurseDirectories,
+      'allowedExtensions': allowedExtensions
+          ?.map((e) => e.toLowerCase().replaceAll(".", ""))
+          .toList(),
+      "mimeTypesFilter": mimeTypesFilter
+    };
+  }
+
+  // Implement toString to make it easier to see information
+  // when using the print statement.
+  @override
+  String toString() {
+    return 'DirectoryFilesPickerParams{directoryUri: $directoryUri, recurseDirectories: $recurseDirectories, allowedExtensions: $allowedExtensions, mimeTypesFilter: $mimeTypesFilter}';
   }
 }
 

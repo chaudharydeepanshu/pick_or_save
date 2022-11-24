@@ -22,13 +22,13 @@ import java.io.File
 class Utils {
 
     // Request code for ACTION_OPEN_DOCUMENT.
-    val REQUEST_CODE_PICK_FILE = 1
+    val REQUEST_CODE_ACTION_OPEN_DOCUMENT = 1
 
     // Request code for ACTION_CREATE_DOCUMENT.
-    val REQUEST_CODE_SAVE_FILE = 2
+    val REQUEST_CODE_ACTION_CREATE_DOCUMENT = 2
 
     // Request code for ACTION_OPEN_DOCUMENT_TREE.
-    val REQUEST_CODE_SAVE_MULTIPLE_FILES = 3
+    val REQUEST_CODE_ACTION_OPEN_DOCUMENT_TREE = 3
 
     @SuppressLint("NewApi")
     fun isPhotoPickerAvailable(): Boolean {
@@ -315,7 +315,27 @@ class Utils {
         Log.d(LOG_TAG, "Canceled File Saving")
     }
 
+    fun cancelDirectoryDocumentsPicker(
+    ) {
+        directoryDocumentsPickerJob?.cancel()
+        Log.d(LOG_TAG, "Canceled directoryDocumentsPicker")
+    }
+
+    fun getURI(uri: String): Uri {
+        val parsed: Uri = Uri.parse(uri)
+        val parsedScheme: String? = parsed.scheme
+        return if ((parsedScheme == null) || parsedScheme.isEmpty() || ("${uri[0]}" == "/")) {
+            // Using "${uri[0]}" == "/" in condition above because if uri is an absolute file path without any scheme starting with "/"
+            // and if its filename contains ":" then the parsed scheme will be wrong.
+            Uri.fromFile(File(uri))
+        } else parsed
+    }
+
     private fun clearPendingResult(resultCallback: MethodChannel.Result?) {
+        if (resultCallback == directoryDocumentsPickingResult && directoryDocumentsPickingResult != null) {
+            directoryDocumentsPickingResult = null
+            println("directoryDocumentsPickingResult result cleared")
+        }
         if (resultCallback == filePickingResult && filePickingResult != null) {
             filePickingResult = null
             println("filePicking result cleared")
@@ -334,30 +354,13 @@ class Utils {
         }
     }
 
-    fun finishPickingSuccessfully(result: List<String>?, resultCallback: MethodChannel.Result?) {
-        resultCallback?.success(result)
-        clearPendingResult(resultCallback)
-    }
-
-    fun finishSavingSuccessfully(result: List<String>?, resultCallback: MethodChannel.Result?) {
+    fun finishSuccessfully(result: Any?, resultCallback: MethodChannel.Result?) {
         resultCallback?.success(result)
         clearPendingResult(resultCallback)
     }
 
     fun finishWithAlreadyActiveError(result: MethodChannel.Result?) {
         result?.error("already_active", "File dialog is already active", null)
-    }
-
-    fun finishSuccessfullyWithListOfString(
-        result: List<String>?, resultCallback: MethodChannel.Result?
-    ) {
-        resultCallback?.success(result)
-        clearPendingResult(resultCallback)
-    }
-
-    fun finishSuccessfullyWithString(result: String?, resultCallback: MethodChannel.Result?) {
-        resultCallback?.success(result)
-        clearPendingResult(resultCallback)
     }
 
     fun finishWithError(
@@ -368,16 +371,6 @@ class Utils {
     ) {
         resultCallback?.error(errorCode, errorMessage, errorDetails)
         clearPendingResult(resultCallback)
-    }
-
-    fun getURI(uri: String): Uri {
-        val parsed: Uri = Uri.parse(uri)
-        val parsedScheme: String? = parsed.scheme
-        return if ((parsedScheme == null) || parsedScheme.isEmpty() || ("${uri[0]}" == "/")) {
-            // Using "${uri[0]}" == "/" in condition above because if uri is an absolute file path without any scheme starting with "/"
-            // and if its filename contains ":" then the parsed scheme will be wrong.
-            Uri.fromFile(File(uri))
-        } else parsed
     }
 
 }

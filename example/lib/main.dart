@@ -43,6 +43,11 @@ class _MyHomePageState extends State<MyHomePage> {
   final bool _localOnly = false;
   List<String>? _pickedFilePath;
 
+  String? _pickedDirectoryPath;
+  DocumentFile? whatsappDocumentsDirectoryFile;
+
+  List<String>? persistedUris;
+
   @override
   void initState() {
     super.initState();
@@ -113,6 +118,74 @@ class _MyHomePageState extends State<MyHomePage> {
     return result;
   }
 
+  Future<String?> _directoryPicker(DirectoryPickerParams params) async {
+    String? result;
+    try {
+      setState(() {
+        _isBusy = true;
+      });
+      result = await _pickOrSavePlugin.directoryPicker(params: params);
+    } on PlatformException catch (e) {
+      log(e.toString());
+    } catch (e) {
+      log(e.toString());
+    }
+    if (!mounted) return result;
+    setState(() {
+      _isBusy = false;
+    });
+    return result;
+  }
+
+  Future<List<DocumentFile>?> _directoryDocumentsPicker(
+      DirectoryDocumentsPickerParams params) async {
+    List<DocumentFile>? result;
+    try {
+      result = await _pickOrSavePlugin.directoryDocumentsPicker(params: params);
+    } on PlatformException catch (e) {
+      log(e.toString());
+    } catch (e) {
+      log(e.toString());
+    }
+    return result;
+  }
+
+  Future<bool?> _permissionStatus(UriPermissionStatusParams params) async {
+    bool? result;
+    try {
+      result = await _pickOrSavePlugin.uriPermissionStatus(params: params);
+    } on PlatformException catch (e) {
+      log(e.toString());
+    } catch (e) {
+      log(e.toString());
+    }
+    return result;
+  }
+
+  Future<List<String>?> _urisWithPersistedPermission() async {
+    List<String>? result;
+    try {
+      result = await _pickOrSavePlugin.urisWithPersistedPermission();
+    } on PlatformException catch (e) {
+      log(e.toString());
+    } catch (e) {
+      log(e.toString());
+    }
+    return result;
+  }
+
+  Future<String?> _cancelActions(CancelActionsParams params) async {
+    String? result;
+    try {
+      result = await _pickOrSavePlugin.cancelActions(params: params);
+    } on PlatformException catch (e) {
+      log(e.toString());
+    } catch (e) {
+      log(e.toString());
+    }
+    return result;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -129,37 +202,41 @@ class _MyHomePageState extends State<MyHomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Picking",
+                "Picking Result Type",
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 8),
+              ToggleButtons(
+                onPressed: (int index) {
+                  setState(() {
+                    for (int buttonIndex = 0;
+                        buttonIndex < isSelected.length;
+                        buttonIndex++) {
+                      if (buttonIndex == index) {
+                        isSelected[buttonIndex] = true;
+                      } else {
+                        isSelected[buttonIndex] = false;
+                      }
+                    }
+                  });
+                },
+                isSelected: isSelected,
+                children: const <Widget>[
+                  Text(" URI "),
+                  Text(" Cached path "),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Picking File/Files",
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
               Card(
                 margin: EdgeInsets.zero,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: [
-                      ToggleButtons(
-                        onPressed: (int index) {
-                          setState(() {
-                            for (int buttonIndex = 0;
-                                buttonIndex < isSelected.length;
-                                buttonIndex++) {
-                              if (buttonIndex == index) {
-                                isSelected[buttonIndex] = true;
-                              } else {
-                                isSelected[buttonIndex] = false;
-                              }
-                            }
-                          });
-                        },
-                        isSelected: isSelected,
-                        children: const <Widget>[
-                          Text(" Give URI "),
-                          Text(" Give cached path "),
-                        ],
-                      ),
-                      const Divider(),
                       CustomButton(
                           buttonText: 'Pick single file',
                           onPressed: _isBusy
@@ -173,10 +250,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                   List<String>? result =
                                       await _filePicker(params);
 
-                                  callSnackBar(
-                                      mounted: mounted,
-                                      context: context,
-                                      text: result.toString());
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: result.toString());
+                                  }
                                 }),
                       const Divider(),
                       CustomButton(
@@ -193,10 +271,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                   List<String>? result =
                                       await _filePicker(params);
 
-                                  callSnackBar(
-                                      mounted: mounted,
-                                      context: context,
-                                      text: result.toString());
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: result.toString());
+                                  }
                                 }),
                       const Divider(),
                       CustomButton(
@@ -216,10 +295,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                   List<String>? result =
                                       await _filePicker(params);
 
-                                  callSnackBar(
-                                      mounted: mounted,
-                                      context: context,
-                                      text: result.toString());
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: result.toString());
+                                  }
                                 }),
                       Text(
                         "Note - This will show only these mimes for selection.",
@@ -241,10 +321,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                   List<String>? result =
                                       await _filePicker(params);
 
-                                  callSnackBar(
-                                      mounted: mounted,
-                                      context: context,
-                                      text: result.toString());
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: result.toString());
+                                  }
                                 }),
                       Text(
                         "Note - This will show only these extensions for selection if the extension has a valid mime type if not it will still only pick that extension and reject others.",
@@ -272,10 +353,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                   List<String>? result =
                                       await _filePicker(params);
 
-                                  callSnackBar(
-                                      mounted: mounted,
-                                      context: context,
-                                      text: result.toString());
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: result.toString());
+                                  }
                                 }),
                       Text(
                         "Note - This will show new photo picker on supported android devices and for unsupported the regular picker. Also it always needs mime type and only first mime type is selected for selection. Also, only pick provided extensions only and reject others.",
@@ -316,10 +398,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                   List<String>? result =
                                       await _fileSaver(params);
 
-                                  callSnackBar(
-                                      mounted: mounted,
-                                      context: context,
-                                      text: result.toString());
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: result.toString());
+                                  }
                                 }),
                       const Divider(),
                       CustomButton(
@@ -339,10 +422,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                   List<String>? result =
                                       await _fileSaver(params);
 
-                                  callSnackBar(
-                                      mounted: mounted,
-                                      context: context,
-                                      text: result.toString());
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: result.toString());
+                                  }
                                 }),
                       const Divider(),
                       CustomButton(
@@ -365,10 +449,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                   List<String>? result =
                                       await _fileSaver(params);
 
-                                  callSnackBar(
-                                      mounted: mounted,
-                                      context: context,
-                                      text: result.toString());
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: result.toString());
+                                  }
                                 }),
                     ],
                   ),
@@ -398,10 +483,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
                                   _pickedFilePath = await _filePicker(params);
 
-                                  callSnackBar(
-                                      mounted: mounted,
-                                      context: context,
-                                      text: _pickedFilePath.toString());
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: _pickedFilePath.toString());
+                                  }
                                 }),
                       CustomButton(
                           buttonText: 'Display Metadata',
@@ -417,10 +503,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                       FileMetadata? result =
                                           await _fileMetadata(params);
 
-                                      callSnackBar(
-                                          mounted: mounted,
-                                          context: context,
-                                          text: result.toString());
+                                      if (mounted) {
+                                        callSnackBar(
+                                            context: context,
+                                            text: result.toString());
+                                      }
                                     }),
                     ],
                   ),
@@ -450,10 +537,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
                                   _pickedFilePath = await _filePicker(params);
 
-                                  callSnackBar(
-                                      mounted: mounted,
-                                      context: context,
-                                      text: _pickedFilePath.toString());
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: _pickedFilePath.toString());
+                                  }
                                 }),
                       CustomButton(
                           buttonText: 'Display Cache file path',
@@ -470,15 +558,265 @@ class _MyHomePageState extends State<MyHomePage> {
                                       String? result =
                                           await _cacheFilePathFromPath(params);
 
-                                      callSnackBar(
-                                          mounted: mounted,
-                                          context: context,
-                                          text: result.toString());
+                                      if (mounted) {
+                                        callSnackBar(
+                                            context: context,
+                                            text: result.toString());
+                                      }
                                     }),
                     ],
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              Text(
+                "Picking Directory - 1",
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              Card(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      CustomButton(
+                          buttonText: 'Open directory picker',
+                          onPressed: _isBusy
+                              ? null
+                              : () async {
+                                  const params = DirectoryPickerParams();
+
+                                  _pickedDirectoryPath =
+                                      await _directoryPicker(params);
+
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: _pickedDirectoryPath.toString());
+                                  }
+                                }),
+                      Text(
+                        "Note - This will open the directory picker. Also it persist permission to the uri even after reboots.",
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                      const Divider(),
+                      CustomButton(
+                          buttonText: 'Display URIs of documents in directory',
+                          onPressed: _pickedDirectoryPath == null
+                              ? null
+                              : () async {
+                                  final params = DirectoryDocumentsPickerParams(
+                                      directoryUri: _pickedDirectoryPath!);
+
+                                  List<DocumentFile>? result =
+                                      await _directoryDocumentsPicker(params);
+
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: result
+                                            ?.map((e) => e.name)
+                                            .toList()
+                                            .toString());
+                                  }
+                                }),
+                      const Divider(),
+                      CustomButton(
+                          buttonText:
+                              'Display URIs of pdf files in directory recursively',
+                          onPressed: _pickedDirectoryPath == null
+                              ? null
+                              : () async {
+                                  final params = DirectoryDocumentsPickerParams(
+                                    directoryUri: _pickedDirectoryPath!,
+                                    recurseDirectories: true,
+                                    allowedExtensions: [".pdf"],
+                                  );
+
+                                  List<DocumentFile>? result =
+                                      await _directoryDocumentsPicker(params);
+
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: result
+                                            ?.map((e) => e.name)
+                                            .toList()
+                                            .toString());
+                                  }
+                                }),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Picking Directory - 2",
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              Card(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      CustomButton(
+                          buttonText: 'Open directory picker',
+                          onPressed: _isBusy
+                              ? null
+                              : () async {
+                                  const params = DirectoryPickerParams();
+
+                                  _pickedDirectoryPath =
+                                      await _directoryPicker(params);
+
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: _pickedDirectoryPath.toString());
+                                  }
+                                }),
+                      Text(
+                        "Note - This will open the directory picker. Also it persist permission to the uri even after reboots.",
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                      const Divider(),
+                      CustomButton(
+                          buttonText:
+                              'Find and store whatsapp documents directory URI',
+                          onPressed: _pickedDirectoryPath == null
+                              ? null
+                              : () async {
+                                  final params = DirectoryDocumentsPickerParams(
+                                    directoryUri: _pickedDirectoryPath!,
+                                    recurseDirectories: true,
+                                  );
+
+                                  List<DocumentFile>? result =
+                                      await _directoryDocumentsPicker(params);
+
+                                  whatsappDocumentsDirectoryFile = result
+                                      ?.where((element) =>
+                                          element.name ==
+                                              "WhatsApp Documents" &&
+                                          element.isDirectory)
+                                      .first;
+                                  setState(() {});
+
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: result
+                                            ?.map((e) => e.name)
+                                            .toList()
+                                            .toString());
+                                  }
+                                }),
+                      const Divider(),
+                      CustomButton(
+                          buttonText:
+                              'Display URIs of whatsapp documents directory',
+                          onPressed: whatsappDocumentsDirectoryFile == null
+                              ? null
+                              : () async {
+                                  final params = DirectoryDocumentsPickerParams(
+                                    documentId:
+                                        whatsappDocumentsDirectoryFile!.id,
+                                    directoryUri:
+                                        whatsappDocumentsDirectoryFile!.uri,
+                                    recurseDirectories: true,
+                                  );
+
+                                  List<DocumentFile>? result =
+                                      await _directoryDocumentsPicker(params);
+
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: result
+                                            ?.map((e) => e.name)
+                                            .toList()
+                                            .toString());
+                                  }
+                                }),
+                      const Divider(),
+                      CustomButton(
+                          buttonText: 'Cancel running picking',
+                          onPressed: () async {
+                            const params = CancelActionsParams(
+                              cancelType: CancelType.directoryDocumentsPicker,
+                            );
+
+                            String? result = await _cancelActions(params);
+
+                            if (mounted) {
+                              callSnackBar(
+                                  context: context, text: result.toString());
+                            }
+                          }),
+                      const Divider(),
+                      CustomButton(
+                          buttonText: 'Display persisted uris',
+                          onPressed: () async {
+                            List<String>? result =
+                                await _urisWithPersistedPermission();
+
+                            setState(() {
+                              persistedUris = result;
+                            });
+
+                            if (mounted) {
+                              callSnackBar(
+                                  context: context, text: result.toString());
+                            }
+                          }),
+                      const Divider(),
+                      CustomButton(
+                          buttonText: 'Display uri permission status',
+                          onPressed:
+                              persistedUris == null || persistedUris!.isEmpty
+                                  ? null
+                                  : () async {
+                                      final params = UriPermissionStatusParams(
+                                        uri: persistedUris!.first,
+                                      );
+
+                                      bool? result =
+                                          await _permissionStatus(params);
+
+                                      if (mounted) {
+                                        callSnackBar(
+                                            context: context,
+                                            text: result.toString());
+                                      }
+                                    }),
+                      const Divider(),
+                      CustomButton(
+                          buttonText:
+                              'Remove uri permission and display status',
+                          onPressed:
+                              persistedUris == null || persistedUris!.isEmpty
+                                  ? null
+                                  : () async {
+                                      final params = UriPermissionStatusParams(
+                                        uri: persistedUris!.first,
+                                        releasePermission: true,
+                                      );
+
+                                      bool? result =
+                                          await _permissionStatus(params);
+
+                                      if (mounted) {
+                                        callSnackBar(
+                                            context: context,
+                                            text: result.toString());
+                                      }
+                                    }),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -521,14 +859,9 @@ class CustomButton extends StatelessWidget {
   }
 }
 
-callSnackBar(
-    {required bool mounted,
-    required BuildContext context,
-    required String text}) {
-  if (mounted) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(text),
-    ));
-  }
+callSnackBar({required BuildContext context, required String? text}) {
+  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    content: Text(text.toString()),
+  ));
 }

@@ -117,7 +117,7 @@ fun saveSingleFile(
 
     utils.applyMimeTypesFilterToIntent(mimeTypesFilter, intent)
 
-    context.startActivityForResult(intent, utils.REQUEST_CODE_SAVE_FILE)
+    context.startActivityForResult(intent, utils.REQUEST_CODE_ACTION_CREATE_DOCUMENT)
 
     Log.d(LOG_TAG, "saveFile - OUT")
 
@@ -195,7 +195,7 @@ fun saveMultipleFiles(
 
     utils.applyMimeTypesFilterToIntent(mimeTypesFilter, intent)
 
-    context.startActivityForResult(intent, utils.REQUEST_CODE_SAVE_MULTIPLE_FILES)
+    context.startActivityForResult(intent, utils.REQUEST_CODE_ACTION_OPEN_DOCUMENT_TREE)
 
     Log.d(LOG_TAG, "saveFile - OUT")
 
@@ -225,7 +225,7 @@ fun processSingleSaveFile(
                 )
 
                 if (savedFilePath != null) {
-                    utils.finishSavingSuccessfully(
+                    utils.finishSuccessfully(
                         listOf(savedFilePath), fileSavingResult
                     )
                 } else {
@@ -252,7 +252,7 @@ fun processSingleSaveFile(
                     Log.d(LOG_TAG, "Deleting source file: ${destinationSaveFileInfo!!.file.path}")
                     destinationSaveFileInfo!!.file.delete()
                 }
-                utils.finishSavingSuccessfully(null, fileSavingResult)
+                utils.finishSuccessfully(null, fileSavingResult)
             } else {
                 utils.finishWithError(
                     "destinationSaveFileInfo_not_found",
@@ -276,7 +276,7 @@ fun processMultipleSaveFile(
     resultCode: Int, data: Intent?, context: Activity
 ): Boolean {
 
-    val coroutineScope = CoroutineScope(Dispatchers.Main)
+    val coroutineScope = CoroutineScope(Dispatchers.IO)
     fileSaveJob = coroutineScope.launch {
 
         val utils = Utils()
@@ -292,7 +292,7 @@ fun processMultipleSaveFile(
                 )
 
                 if (savedFilesPaths.isNotEmpty()) {
-                    utils.finishSavingSuccessfully(
+                    utils.finishSuccessfully(
                         savedFilesPaths, fileSavingResult
                     )
                 } else {
@@ -323,7 +323,7 @@ fun processMultipleSaveFile(
                         saveFile.delete()
                     }
                 }
-                utils.finishSavingSuccessfully(null, fileSavingResult)
+                utils.finishSuccessfully(null, fileSavingResult)
             } else {
                 utils.finishWithError(
                     "destinationSaveFilesInfo_not_found",

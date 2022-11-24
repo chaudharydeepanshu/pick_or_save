@@ -120,6 +120,21 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             }
         }
         when (call.method) {
+            "pickDirectory" -> pickOrSave!!.pickDirectory(
+                result,
+                initialDirectoryUri = call.argument("initialDirectoryUri"),
+            )
+            "directoryDocumentsPicker" -> pickOrSave!!.pickDirectoryDocuments(
+                result,
+                documentId = call.argument("documentId"),
+                directoryUri = call.argument("directoryUri"),
+                recurseDirectories = call.argument("recurseDirectories"),
+                allowedExtensions = parseMethodCallListOfStringArgument(
+                    call, "allowedExtensions"
+                ) ?: listOf(),
+                mimeTypesFilter = parseMethodCallListOfStringArgument(call, "mimeTypesFilter")
+                    ?: listOf(),
+            )
             "pickFiles" -> pickOrSave!!.pickFile(
                 result,
                 allowedExtensions = parseMethodCallListOfStringArgument(
@@ -146,7 +161,17 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 result,
                 sourceFilePathOrUri = call.argument("filePath"),
             )
-            "cancelFilesSaving" -> pickOrSave!!.cancelFilesSaving()
+            "uriPermissionStatus" -> pickOrSave!!.uriPermissionStatus(
+                result,
+                uri = call.argument("uri"),
+                releasePermission = call.argument("releasePermission"),
+            )
+            "urisWithPersistedPermission" -> pickOrSave!!.urisWithPersistedPermission(result)
+            "cancelActions" -> pickOrSave!!.cancelActions(
+                cancelType = parseMethodCallCancelTypeArgument(
+                    call, "cancelType"
+                )
+            )
             else -> result.notImplemented()
         }
     }
@@ -193,6 +218,21 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 PickerType.File
             } else if (call.argument<String>(arg)?.toString() == "PickerType.photo") {
                 PickerType.Photo
+            } else {
+                null
+            }
+        }
+        return null
+    }
+
+    private fun parseMethodCallCancelTypeArgument(call: MethodCall, arg: String): CancelType? {
+        if (call.hasArgument(arg)) {
+            return if (call.argument<String>(arg)?.toString() == "CancelType.filesSaving") {
+                CancelType.FilesSaving
+            } else if (call.argument<String>(arg)
+                    ?.toString() == "CancelType.directoryDocumentsPicker"
+            ) {
+                CancelType.DirectoryDocumentsPicker
             } else {
                 null
             }

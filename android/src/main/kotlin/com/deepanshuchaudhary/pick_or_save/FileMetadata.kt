@@ -37,10 +37,10 @@ fun fileMetadataFromPathOrUri(
                     Date(f.lastModified())
                 )
             )
-            utils.finishSuccessfullyWithListOfString(fileMetaData, resultCallback)
+            utils.finishSuccessfully(fileMetaData, resultCallback)
         } else {
             println("The File does not exist")
-            utils.finishSuccessfullyWithListOfString(null, resultCallback)
+            utils.finishSuccessfully(null, resultCallback)
         }
     } else {
         // The query, because it only applies to a single document, returns only
@@ -109,9 +109,9 @@ fun fileMetadataFromPathOrUri(
         }
 
         if (fileMetaData.size != 3) {
-            utils.finishSuccessfullyWithListOfString(null, resultCallback)
+            utils.finishSuccessfully(null, resultCallback)
         } else {
-            utils.finishSuccessfullyWithListOfString(fileMetaData, resultCallback)
+            utils.finishSuccessfully(fileMetaData, resultCallback)
         }
     }
 }

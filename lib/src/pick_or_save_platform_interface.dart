@@ -23,8 +23,18 @@ abstract class PickOrSavePlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  Future<String?> directoryPicker({DirectoryPickerParams? params}) {
+    throw UnimplementedError('directoryPicker() has not been implemented.');
+  }
+
+  Future<List<DocumentFile>?> directoryDocumentsPicker(
+      {DirectoryDocumentsPickerParams? params}) {
+    throw UnimplementedError(
+        'directoryFilesPicker() has not been implemented.');
+  }
+
   Future<List<String>?> filePicker({FilePickerParams? params}) {
-    throw UnimplementedError('pickFile() has not been implemented.');
+    throw UnimplementedError('filePicker() has not been implemented.');
   }
 
   Future<List<String>?> fileSaver({FileSaverParams? params}) {
@@ -40,7 +50,16 @@ abstract class PickOrSavePlatform extends PlatformInterface {
         'cacheFilePathFromUri() has not been implemented.');
   }
 
-  Future<String?> cancelFilesSaving() {
-    throw UnimplementedError('cancelFilesSaving() has not been implemented.');
+  Future<bool?> uriPermissionStatus({UriPermissionStatusParams? params}) {
+    throw UnimplementedError('uriPermissionStatus() has not been implemented.');
+  }
+
+  Future<List<String>?> urisWithPersistedPermission() {
+    throw UnimplementedError(
+        'urisWithPersistedPermission() has not been implemented.');
+  }
+
+  Future<String?> cancelActions({CancelActionsParams? params}) {
+    throw UnimplementedError('cancelActions() has not been implemented.');
   }
 }
