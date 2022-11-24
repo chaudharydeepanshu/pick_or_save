@@ -30,7 +30,7 @@ class MethodChannelPickOrSave extends PickOrSavePlatform {
         DocumentFile(
           id: pickedFile[0] as String,
           uri: pickedFile[1] as String,
-          type: pickedFile[2] as String?,
+          mimeType: pickedFile[2] as String?,
           name: pickedFile[3] as String,
           isDirectory: pickedFile[4] as bool,
           isFile: pickedFile[5] as bool,
@@ -173,7 +173,7 @@ class CancelActionsParams {
 class DocumentFile {
   final String id;
   final String uri;
-  final String? type;
+  final String? mimeType;
   final String name;
   final bool isDirectory;
   final bool isFile;
@@ -181,7 +181,7 @@ class DocumentFile {
   DocumentFile({
     required this.id,
     required this.uri,
-    required this.type,
+    required this.mimeType,
     required this.name,
     required this.isDirectory,
     required this.isFile,
@@ -191,7 +191,7 @@ class DocumentFile {
   // when using the print statement.
   @override
   String toString() {
-    return 'DocumentFile{id: $id, uri: $uri, type: $type, name: $name, isDirectory: $isDirectory, isFile: $isFile}';
+    return 'DocumentFile{id: $id, uri: $uri, type: $mimeType, name: $name, isDirectory: $isDirectory, isFile: $isFile}';
   }
 }
 

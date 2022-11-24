@@ -1,3 +1,16 @@
+## 2.2.1
+
+* Added support for picking directories with persistent permission and return its uri.
+* Added support to optionally transverse through all subdirectories in a picked directory and return their uris.
+* Added support to selectively transverse starting through a directory whose uri we stored from previous transverse.
+* Added support to provide mime types and extensions list when transversing, to only get those types of documents in result.
+* Added support for getting all persistent permission uris from device.
+* Added support for checking persistent permission status of uri.
+* Added support for releasing a persistent permission for a uri.
+* Improved intents handling.
+* Updated documentation.
+* Updated example.
+
 ## 2.1.8
 
 * Updated documentation.

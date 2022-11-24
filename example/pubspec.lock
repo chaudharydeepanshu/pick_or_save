@@ -151,10 +151,10 @@ packages:
     dependency: transitive
     description:
       name: path_provider_android
-      sha256: "1dab723dd8feeb80afb39c7be894f09df1457243d930010f6f328fb8c660c5e1"
+      sha256: a776c088d671b27f6e3aa8881d64b87b3e80201c64e8869b811325de7a76c15e
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.21"
+    version: "2.0.22"
   path_provider_ios:
     dependency: transitive
     description:
@@ -201,7 +201,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "2.1.8"
+    version: "2.2.1"
   platform:
     dependency: transitive
     description:
