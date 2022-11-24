@@ -15,6 +15,7 @@ A Flutter file picking and saving package that enables you to pick or save a sin
 - Works on Android 5.0 (API level 21) or later.
 - Pick single file, multiple files with certain extensions or mime types.
 - Supports photo picker on supported devices.
+- Supports picking directory with persistent permission and transversing the picked directory documents.
 - Get meta data like name, size and last modified from from android uri or file path.
 - Saves single file while allowing user to choose location and name.
 - Saves multiple file while allowing user to choose location or directory for saving all files.
