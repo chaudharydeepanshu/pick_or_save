@@ -620,6 +620,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                             .toString());
                                   }
                                 }),
+                      Text(
+                        "Note - This displays all documents contained under that directory. This will not transverse into sub directories.",
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
                       const Divider(),
                       CustomButton(
                           buttonText:
@@ -631,6 +635,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                     directoryUri: _pickedDirectoryPath!,
                                     recurseDirectories: true,
                                     allowedExtensions: [".pdf"],
+                                    mimeTypesFilter: [
+                                      // "image/*",
+                                      // "application/pdf"
+                                    ],
                                   );
 
                                   List<DocumentFile>? result =
@@ -645,6 +653,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                             .toString());
                                   }
                                 }),
+                      Text(
+                        "Note - This displays all pdf documents contained under that directory. This will transverse into sub directories.",
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
                     ],
                   ),
                 ),
@@ -712,6 +724,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                             .toString());
                                   }
                                 }),
+                      Text(
+                        "Note - This will search for directory named \"WhatsApp Documents\" in the chosen directory and if found it will store its uri for future convenience.",
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
                       const Divider(),
                       CustomButton(
                           buttonText:
@@ -739,6 +755,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                             .toString());
                                   }
                                 }),
+                      Text(
+                        "Note - This will display the content of \"WhatsApp Documents\" directory of which uri we stored previously. You could notice that it is tremendously fast as it only recurse the document inside this directory",
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
                       const Divider(),
                       CustomButton(
                           buttonText: 'Cancel running picking',
@@ -754,6 +774,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                   context: context, text: result.toString());
                             }
                           }),
+                      Text(
+                        "Note - This cancels any running recursion. As sometimes the user may not want to continue with the chosen directory",
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
                       const Divider(),
                       CustomButton(
                           buttonText: 'Display persisted uris',
@@ -770,6 +794,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                   context: context, text: result.toString());
                             }
                           }),
+                      Text(
+                        "Note - Displays the uris persisted in device. It check for flags: Intent.FLAG_GRANT_READ_URI_PERMISSION, Intent.FLAG_GRANT_WRITE_URI_PERMISSION",
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
                       const Divider(),
                       CustomButton(
                           buttonText: 'Display uri permission status',
@@ -790,6 +818,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                             text: result.toString());
                                       }
                                     }),
+                      Text(
+                        "Note - Displays a old saved uri persistence status. It check for flags: Intent.FLAG_GRANT_READ_URI_PERMISSION, Intent.FLAG_GRANT_WRITE_URI_PERMISSION",
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
                       const Divider(),
                       CustomButton(
                           buttonText:
@@ -812,6 +844,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                             text: result.toString());
                                       }
                                     }),
+                      Text(
+                        "Note - Removes uri persistence and then displays its new persistence status for verification.",
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
                     ],
                   ),
                 ),

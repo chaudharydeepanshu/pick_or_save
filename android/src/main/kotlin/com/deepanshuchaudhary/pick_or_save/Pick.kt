@@ -21,7 +21,7 @@ var directoryDocumentsPickerJob: Job? = null
 
 // For picking files under a directory.
 fun pickDocumentsFromDirectoryUri(
-    documentId: String?,
+    docId: String?,
     directoryUri: String,
     recurseDirectories: Boolean,
     allowedExtensions: List<String>,
@@ -65,7 +65,7 @@ fun pickDocumentsFromDirectoryUri(
 
         // get children uri from the tree uri
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
-            treeUri, documentId ?: DocumentsContract.getTreeDocumentId(treeUri)
+            treeUri, docId ?: DocumentsContract.getTreeDocumentId(treeUri)
         )
 
         // Keep track of our directory hierarchy.
@@ -97,7 +97,7 @@ fun pickDocumentsFromDirectoryUri(
 //                        val lastModified: String = c.getString(3)
 //                        val size: String = c.getString(4)
                         val isDirectory: Boolean = DocumentsContract.Document.MIME_TYPE_DIR == mime
-                        var documentUri = DocumentsContract.buildDocumentUriUsingTree(
+                        val documentUri = DocumentsContract.buildDocumentUriUsingTree(
                             treeUri, documentId
                         )
                         if (isDirectory && recurseDirectories) {
@@ -106,20 +106,28 @@ fun pickDocumentsFromDirectoryUri(
                             )
                             dirNodes.add(newNode)
                         }
-                        if (updatedMimeTypeFilter.isEmpty()) {
+                        var isMimeSupported = false
+
+                        for (it in updatedMimeTypeFilter) {
+                            if (it == mime) {
+                                isMimeSupported = true
+                                break
+                            }
+
+                            val splitParts = it.split("/").toList()
+
+                            if (splitParts.size > 1 && (splitParts[1].trim() == "*" || splitParts[1].trim() == "")) {
+                                if (mime.startsWith(splitParts[0])) {
+                                    isMimeSupported = true
+                                    break
+                                }
+                            }
+                        }
+
+                        if (updatedMimeTypeFilter.isEmpty() || isMimeSupported) {
                             directoryFilesUris.add(
                                 listOf(
                                     documentId,
-                                    documentUri.toString(),
-                                    mime,
-                                    name,
-                                    isDirectory,
-                                    !isDirectory,
-                                )
-                            )
-                        } else if (updatedMimeTypeFilter.contains(mime)) {
-                            directoryFilesUris.add(
-                                listOf(
                                     documentUri.toString(),
                                     mime,
                                     name,

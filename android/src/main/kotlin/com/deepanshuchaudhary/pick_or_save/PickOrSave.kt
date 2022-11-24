@@ -54,7 +54,7 @@ class PickOrSave(
             directoryDocumentsPickingResult = resultCallback
 
             pickDocumentsFromDirectoryUri(
-                documentId = documentId,
+                docId = documentId,
                 directoryUri = directoryUri!!,
                 recurseDirectories = recurseDirectories!!,
                 context = activity,
@@ -413,7 +413,7 @@ class PickOrSave(
 
         val grantedUris = mutableListOf<String>()
 
-        // list of all persisted permissions for our app
+        // List of all persisted permissions for our app.
         val list = contentResolver.persistedUriPermissions
         for (i in list.indices) {
             val persistedUriString = list[i].uri.toString()
