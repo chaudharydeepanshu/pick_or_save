@@ -124,6 +124,7 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 result,
                 initialDirectoryUri = call.argument("initialDirectoryUri"),
             )
+
             "directoryDocumentsPicker" -> pickOrSave!!.pickDirectoryDocuments(
                 result,
                 documentId = call.argument("documentId"),
@@ -135,6 +136,7 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 mimeTypesFilter = parseMethodCallListOfStringArgument(call, "mimeTypesFilter")
                     ?: listOf(),
             )
+
             "pickFiles" -> pickOrSave!!.pickFile(
                 result,
                 allowedExtensions = parseMethodCallListOfStringArgument(
@@ -147,31 +149,38 @@ class PickOrSavePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 pickerType = parseMethodCallPickerTypeArgument(call) ?: PickerType.File,
                 enableMultipleSelection = call.argument("enableMultipleSelection") ?: true,
             )
+
             "saveFiles" -> pickOrSave!!.saveFile(
                 result,
                 saveFiles = parseMethodCallListOfSaveFileInfoArgument(call, "saveFiles"),
                 mimeTypesFilter = parseMethodCallListOfStringArgument(call, "mimeTypesFilter")
                     ?: listOf(),
                 localOnly = call.argument("localOnly") ?: false,
+                directoryUri = call.argument("directoryUri"),
             )
+
             "fileMetaData" -> pickOrSave!!.fileMetaData(
                 result, sourceFilePathOrUri = call.argument("filePath")
             )
+
             "cacheFilePathFromPath" -> pickOrSave!!.cacheFilePath(
                 result,
                 sourceFilePathOrUri = call.argument("filePath"),
             )
+
             "uriPermissionStatus" -> pickOrSave!!.uriPermissionStatus(
                 result,
                 uri = call.argument("uri"),
                 releasePermission = call.argument("releasePermission"),
             )
+
             "urisWithPersistedPermission" -> pickOrSave!!.urisWithPersistedPermission(result)
             "cancelActions" -> pickOrSave!!.cancelActions(
                 cancelType = parseMethodCallCancelTypeArgument(
                     call, "cancelType"
                 )
             )
+
             else -> result.notImplemented()
         }
     }

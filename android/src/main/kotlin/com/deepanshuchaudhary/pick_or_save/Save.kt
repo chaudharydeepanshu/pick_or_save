@@ -2,6 +2,7 @@ package com.deepanshuchaudhary.pick_or_save
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import android.webkit.MimeTypeMap
 import com.deepanshuchaudhary.pick_or_save.PickOrSavePlugin.Companion.LOG_TAG
@@ -132,6 +133,7 @@ fun saveMultipleFiles(
     mimeTypesFilter: List<String>?,
     localOnly: Boolean,
     context: Activity,
+    destinationDirectoryUri: String?,
 ) {
     val utils = Utils()
 
@@ -188,20 +190,75 @@ fun saveMultipleFiles(
         }
     }
 
-    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-    if (localOnly) {
-        intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
+    if (destinationDirectoryUri == null) {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        if (localOnly) {
+            intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
+        }
+
+        utils.applyMimeTypesFilterToIntent(mimeTypesFilter, intent)
+
+        context.startActivityForResult(intent, utils.REQUEST_CODE_ACTION_OPEN_DOCUMENT_TREE)
+
+        Log.d(LOG_TAG, "saveFile - OUT")
+
+        val end = System.nanoTime()
+        println("Elapsed time in nanoseconds: ${end - begin}")
+    } else {
+        saveMultipleFilesToDirectory(destinationDirectoryUri, context)
     }
 
-    utils.applyMimeTypesFilterToIntent(mimeTypesFilter, intent)
+}
 
-    context.startActivityForResult(intent, utils.REQUEST_CODE_ACTION_OPEN_DOCUMENT_TREE)
+// Save multiple files to directory.
+fun saveMultipleFilesToDirectory(
+    destinationDirectoryUri: String, context: Activity
+): Boolean {
 
-    Log.d(LOG_TAG, "saveFile - OUT")
+    val coroutineScope = CoroutineScope(Dispatchers.IO)
+    fileSaveJob = coroutineScope.launch {
 
-    val end = System.nanoTime()
-    println("Elapsed time in nanoseconds: ${end - begin}")
+        val utils = Utils()
 
+        val begin = System.nanoTime()
+
+        if (destinationSaveFilesInfo.isNotEmpty()) {
+
+            val treeUri = utils.getURI(destinationDirectoryUri.trim())
+
+            val savedFilesPaths: List<String> = utils.saveMultipleFilesOnBackground(
+                destinationSaveFilesInfo, treeUri, fileSavingResult, context
+            )
+
+            if (savedFilesPaths.isNotEmpty()) {
+                utils.finishSuccessfully(
+                    savedFilesPaths, fileSavingResult
+                )
+            } else {
+                utils.finishWithError(
+                    "files_saving_failed",
+                    "saved files paths list was empty",
+                    "saved files paths list was empty",
+                    fileSavingResult
+                )
+            }
+
+        } else {
+            utils.finishWithError(
+                "destinationSaveFilesInfo_not_found",
+                "destinationSaveFilesInfo is empty",
+                "destinationSaveFilesInfo is empty",
+                fileSavingResult
+            )
+        }
+
+
+        val end = System.nanoTime()
+        println("Elapsed time in nanoseconds: ${end - begin}")
+
+    }
+
+    return true
 }
 
 // Process single save file.

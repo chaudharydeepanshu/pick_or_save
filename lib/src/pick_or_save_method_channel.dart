@@ -383,9 +383,17 @@ class FileSaverParams {
   /// If true, [filePicker] shows only local files.
   final bool localOnly;
 
+  /// Provide uri of directory where you want save the files.
+  ///
+  /// If not provided then it will open the system location picker.
+  final String? directoryUri;
+
   /// Create parameters for the [saveFile] method.
   const FileSaverParams(
-      {this.saveFiles, this.mimeTypesFilter, this.localOnly = false})
+      {this.saveFiles,
+      this.mimeTypesFilter,
+      this.localOnly = false,
+      this.directoryUri})
       : assert(saveFiles != null && saveFiles.length != 0,
             'provide saveFiles with non null and non empty list');
 
@@ -393,7 +401,8 @@ class FileSaverParams {
     return <String, dynamic>{
       'saveFiles': saveFiles?.map((e) => e.toJson()).toList(),
       'mimeTypesFilter': mimeTypesFilter,
-      'localOnly': localOnly
+      'localOnly': localOnly,
+      'directoryUri': directoryUri
     };
   }
 

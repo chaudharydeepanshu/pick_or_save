@@ -8,6 +8,7 @@ import io.flutter.plugin.common.PluginRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import android.net.Uri
 
 //https://developer.android.com/training/data-storage/shared/documents-files#open-file
 
@@ -221,13 +222,14 @@ class PickOrSave(
         resultCallback: MethodChannel.Result,
         saveFiles: List<SaveFileInfo>?,
         mimeTypesFilter: List<String>?,
-        localOnly: Boolean
+        localOnly: Boolean,
+        directoryUri: String?,
     ) {
         try {
 
             Log.d(
                 LOG_TAG,
-                "saveFile - IN, saveFiles=$saveFiles, mimeTypesFilter=$mimeTypesFilter, localOnly=$localOnly"
+                "saveFile - IN, mimeTypesFilter=$mimeTypesFilter, localOnly=$localOnly, directoryUri=$directoryUri, saveFiles=$saveFiles"
             )
 
             if (filePickingResult != null) {
@@ -255,19 +257,20 @@ class PickOrSave(
                     "Save files list is empty",
                     filePickingResult
                 )
-            } else if (saveFiles.size == 1) {
+            } else if (saveFiles.size == 1 && directoryUri == null) {
                 saveSingleFile(
                     saveFileInfo = saveFiles.first(),
                     mimeTypesFilter = mimeTypesFilter,
                     localOnly = localOnly,
-                    context = activity
+                    context = activity,
                 )
             } else {
                 saveMultipleFiles(
                     saveFilesInfo = saveFiles,
                     mimeTypesFilter = mimeTypesFilter,
                     localOnly = localOnly,
-                    context = activity
+                    context = activity,
+                    destinationDirectoryUri = directoryUri
                 )
             }
 
@@ -369,16 +372,19 @@ class PickOrSave(
             utils.REQUEST_CODE_ACTION_OPEN_DOCUMENT -> {
                 processActionOpenDocument(resultCode = resultCode, data = data, context = activity)
             }
+
             utils.REQUEST_CODE_ACTION_CREATE_DOCUMENT -> {
                 processActionCreateDocument(
                     resultCode = resultCode, data = data, context = activity
                 )
             }
+
             utils.REQUEST_CODE_ACTION_OPEN_DOCUMENT_TREE -> {
                 processActionOpenDocumentTree(
                     resultCode = resultCode, data = data, context = activity
                 )
             }
+
             else -> false
         }
     }

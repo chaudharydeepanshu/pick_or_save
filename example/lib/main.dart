@@ -657,6 +657,36 @@ class _MyHomePageState extends State<MyHomePage> {
                         "Note - This displays all pdf documents contained under that directory. This will traverse into sub directories.",
                         style: Theme.of(context).textTheme.labelSmall,
                       ),
+                      const Divider(),
+                      CustomButton(
+                          buttonText:
+                              'Saving single file from Uint8List to picked directory',
+                          onPressed: _isBusy || _pickedDirectoryPath == null
+                              ? null
+                              : () async {
+                                  final params = FileSaverParams(
+                                    localOnly: _localOnly,
+                                    saveFiles: [
+                                      SaveFileInfo(
+                                          fileData: testUint8List,
+                                          fileName: "single file.png"),
+                                    ],
+                                    directoryUri: _pickedDirectoryPath,
+                                  );
+
+                                  List<String>? result =
+                                      await _fileSaver(params);
+
+                                  if (mounted) {
+                                    callSnackBar(
+                                        context: context,
+                                        text: result.toString());
+                                  }
+                                }),
+                      Text(
+                        "Note - This save files from Uint8List or path to the picked directory. It is useful if we don't want save dialog if we already have access to that directory.",
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
                     ],
                   ),
                 ),
