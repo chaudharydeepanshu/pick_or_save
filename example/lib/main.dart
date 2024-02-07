@@ -875,8 +875,7 @@ Future<File> getTempFileFromData(Uint8List data) async {
 }
 
 class CustomButton extends StatelessWidget {
-  const CustomButton({Key? key, required this.buttonText, this.onPressed})
-      : super(key: key);
+  const CustomButton({super.key, required this.buttonText, this.onPressed});
 
   final String buttonText;
   final void Function()? onPressed;
