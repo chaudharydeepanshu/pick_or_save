@@ -29,7 +29,7 @@ android {
         namespace 'com.deepanshuchaudhary.pick_or_save'
     }
 
-    compileSdkVersion 34
+    compileSdk 34
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
